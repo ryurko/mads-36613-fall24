@@ -2,17 +2,29 @@ project:
   type: website
 
 website:
-  title: "mads-36613-fall24"
-  navbar:
-    left:
+  title: "Data Visualization 36-613 Fall 24"
+  sidebar:
+    background: primary
+    pinned: true
+    align: center
+    tools:
+      - icon: github
+        href: https://github.com/ryurko/mads-36613-fall24
+        text: GitHub
+    style: docked
+    contents:
       - href: index.qmd
         text: Home
-      - about.qmd
+      - href: lectures.qmd
+        text: Lectures
+      - href: demos.qmd
+        text: Demos
 
 format:
   html:
-    theme: cosmo
-    css: styles.css
+    theme: 
+      - cosmo
+      - custom.scss
     toc: true
 
 
