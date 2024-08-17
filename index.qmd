@@ -13,3 +13,25 @@ Office hours schedule:
 | Prof Yurko           | 11 AM - 12 PM  | Baker Hall 132D |
 | Anna Rosengart       | TBD            | Zoom       |
 
+There are no required textbooks for this course, but the following are useful free resources that I will sometimes refer to as recommended reading:
+
++ [R for Data Science](https://r4ds.hadley.nz/)
+
++ [Data Visualization: A Practical Introduction](https://socviz.co/index.html#preface)
+
++ [Fundamentals of Data Visualization](https://clauswilke.com/dataviz/index.html)
+
++ [ggplot2: Elegant Graphics for Data Analysis](https://ggplot2-book.org/)
+
++ [Mastering Shiny](https://mastering-shiny.org/index.html)
+
+And the following are interesting data visualization and infographics websites:
+
++ [FlowingData](https://flowingdata.com/)
+
++ [History of Data Visualization](https://friendly.github.io/HistDataVis/)
+
++ [Alberto Cairo's substack](https://theartofinsight.substack.com/)
+
+
+
