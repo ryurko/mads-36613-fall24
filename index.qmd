@@ -11,6 +11,5 @@ Office hours schedule:
 | Name                 | Office hours   | Location   |
 |----------------------|----------------|------------|
 | Prof Yurko           | 11 AM - 12 PM  | Baker Hall 132D |
-| Teaching Assistant 1 | TBD    | Zoom       |
-| Teaching Assistant 2 | TBD | Zoom       |
+| Anna Rosengart       | TBD            | Zoom       |
 
