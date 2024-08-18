@@ -33,5 +33,7 @@ And the following are interesting data visualization and infographics websites:
 
 + [Alberto Cairo's substack](https://theartofinsight.substack.com/)
 
++ [Friends Don't Let Friends Make Bad Graphs](https://github.com/cxli233/FriendsDontLetFriends)
+
 
 
