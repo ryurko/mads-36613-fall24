@@ -8,10 +8,10 @@ __Lectures are on Mondays and Wednesdays from 9:30 - 10:50 AM ET, located in WEH
 
 Office hours schedule:
 
-| Name                 | Office hours   | Location   |
-|----------------------|----------------|------------|
-| Prof Yurko           | 11 AM - 12 PM  | Baker Hall 132D |
-| Anna Rosengart       | TBD            | Zoom       |
+| Name                 | Office hours       | Location        |
+|----------------------|--------------------|-----------------|
+| Prof Yurko           | M/W 11 AM - 12 PM  | Baker Hall 132D |
+| Anna Rosengart       | Tuesday 1 - 2  PM  | Zoom            |
 
 There are no required textbooks for this course, but the following are useful free resources that I will sometimes refer to as recommended reading:
 
