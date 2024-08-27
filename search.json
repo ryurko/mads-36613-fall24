@@ -4,7 +4,7 @@
     "href": "lectures.html",
     "title": "Lectures",
     "section": "",
-    "text": "Lecture\nDate\nTitle\nMaterials\n\n\n\n\n1\nAug 26\nIntroduction and Grammar of Graphics\nslides",
+    "text": "Lecture\nDate\nTitle\nMaterials\n\n\n\n\n1\nAug 26\nIntroduction and Grammar of Graphics\nslides\n\n\n2\nAug 28\nPrinciples and 1D Categorical Data\nslides",
     "crumbs": [
       "Lectures"
     ]
@@ -164,16 +164,6 @@
     "text": "Recap and next steps\n\nWalked through course logistics (READ THE SYLLABUS)\nIntroduced the Grammar of Graphics and ggplot2 basics\nDiscussed data visualization principles and the role of infographics\n\n\n\nHW1 is posted - complete the GenAI Literacy module ON TIME!\nComplete HW0 by Thursday night! Confirms you have everything installed and can render .qmd files to PDF via tinytex\n\n\n\n\nNext time: Visualizing categorical data\nRecommended reading:\n\nCW Chapter 2 Visualizing data: Mapping data onto aesthetics, CW Chapter 17 The principle of proportional ink\nKH Chapter 1 Look at data, KH Chapter 3 Make a plot\n\n\n\n\n\nmads-36613-fall24"
   },
   {
-    "objectID": "demos.html",
-    "href": "demos.html",
-    "title": "Demos",
-    "section": "",
-    "text": "Demo\nDate\nTitle\nDemo file\n\n\n\n\n1\nAug 26\nInto the tidyverse\nHTML",
-    "crumbs": [
-      "Demos"
-    ]
-  },
-  {
     "objectID": "demos/01-into-tidyverse.html",
     "href": "demos/01-into-tidyverse.html",
     "title": "Demo 01: Into the tidyverse",
@@ -228,6 +218,247 @@
     "title": "Demo 01: Into the tidyverse",
     "section": "Putting it all together…",
     "text": "Putting it all together…\nAs your own exercise, create a tidy dataset where each row == an island with the following variables:\n\nnumber of penguins,\nnumber of unique species on the island (see help(unique)),\naverage body_mass_g,\nvariance (see help(var)) of bill_depth_mm\n\nPrior to making those variables, make sure to filter missings and also only consider female penguins. Then arrange the islands in order of the average body_mass_g:\n\n# INSERT YOUR CODE HERE"
+  },
+  {
+    "objectID": "demos.html",
+    "href": "demos.html",
+    "title": "Demos",
+    "section": "",
+    "text": "Demo\nDate\nTitle\nDemo file\n\n\n\n\n1\nAug 26\nInto the tidyverse\nHTML",
+    "crumbs": [
+      "Demos"
+    ]
+  },
+  {
+    "objectID": "lectures/02-categorical.html#reminders-previously-and-today",
+    "href": "lectures/02-categorical.html#reminders-previously-and-today",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Reminders, previously, and today…",
+    "text": "Reminders, previously, and today…\n\nHW1 was UPDATED and is due next Wednesday - complete the GenAI Literacy module ON TIME!\nComplete HW0 by Thursday night! Confirms you have everything installed and can render .qmd files to PDF via tinytex\n\n\n\nWalked through course logistics (READ THE SYLLABUS)\nIntroduced the Grammar of Graphics and ggplot2 basics\n\n\n\nTODAY:\n\nDiscuss data visualization principles and the role of infographics\nVisualizing categorical data (starting with 1D)"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#in-the-beginning",
+    "href": "lectures/02-categorical.html#in-the-beginning",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "In the beginning…",
+    "text": "In the beginning…\n\nMichael Florent van Langren published the first (known) statistical graphic in 1644\n\n\n\n\n\n\nPlots different estimates of the longitudinal distance between Toledo, Spain and Rome, Italy\ni.e., visualization of collected data to aid in estimation of parameter"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#john-snow-knows-something-about-cholera",
+    "href": "lectures/02-categorical.html#john-snow-knows-something-about-cholera",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "John Snow Knows Something About Cholera",
+    "text": "John Snow Knows Something About Cholera"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#charles-minards-map-of-napoleons-russian-disaster",
+    "href": "lectures/02-categorical.html#charles-minards-map-of-napoleons-russian-disaster",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Charles Minard’s Map of Napoleon’s Russian Disaster",
+    "text": "Charles Minard’s Map of Napoleon’s Russian Disaster"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#florence-nightingales-rose-diagram",
+    "href": "lectures/02-categorical.html#florence-nightingales-rose-diagram",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Florence Nightingale’s Rose Diagram",
+    "text": "Florence Nightingale’s Rose Diagram"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#milestones-in-data-visualization-history",
+    "href": "lectures/02-categorical.html#milestones-in-data-visualization-history",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Milestones in Data Visualization History",
+    "text": "Milestones in Data Visualization History"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#edward-tuftes-principles-of-data-visualization",
+    "href": "lectures/02-categorical.html#edward-tuftes-principles-of-data-visualization",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Edward Tufte’s Principles of Data Visualization",
+    "text": "Edward Tufte’s Principles of Data Visualization\nGraphics: visually display measured quantities by combining points, lines, coordinate systems, numbers, symbols, words, shading, color\nOften our goal is to show data and/or communicate a story\n\n\nInduce viewer to think about substance, not graphical methodology\nMake large, complex datasets more coherent\nEncourage comparison of different pieces of data\nDescribe, explore, and identify relationships\nAvoid data distortion and data decoration\nUse consistent graph design\n\n\n\nAvoid graphs that lead to misleading conclusions!"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#how-to-fail-this-class",
+    "href": "lectures/02-categorical.html#how-to-fail-this-class",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "How to Fail this Class:",
+    "text": "How to Fail this Class:"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#what-about-this-spiral",
+    "href": "lectures/02-categorical.html#what-about-this-spiral",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "What about this spiral?",
+    "text": "What about this spiral?\n\n\nRequires distortion"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#infographics-to-communicate-a-story-check-out-flowingdata-for-more-examples",
+    "href": "lectures/02-categorical.html#infographics-to-communicate-a-story-check-out-flowingdata-for-more-examples",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Infographics to communicate a story (check out FlowingData for more examples)",
+    "text": "Infographics to communicate a story (check out FlowingData for more examples)"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#alberto-cairo-and-the-art-of-insight",
+    "href": "lectures/02-categorical.html#alberto-cairo-and-the-art-of-insight",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Alberto Cairo and the art of insight",
+    "text": "Alberto Cairo and the art of insight"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#d-categorical-data",
+    "href": "lectures/02-categorical.html#d-categorical-data",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "1D Categorical Data",
+    "text": "1D Categorical Data\nTwo different versions of categorical:\n\nNominal: coded with arbitrary numbers, i.e., no real order\n\n\nExamples: race, gender, species, text\n\n\n\nOrdinal: levels with a meaningful order\n\n\nExamples: education level, grades, ranks\n\n\n\nNOTE: R and ggplot considers a categorical variable to be factor\n\nR will always treat categorical variables as ordinal! Defaults to alphabetical…\nWe will need to manually define the factor levels"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#d-categorical-data-structure",
+    "href": "lectures/02-categorical.html#d-categorical-data-structure",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "1D categorical data structure",
+    "text": "1D categorical data structure\n\nObservations are collected into a vector \\((x_1, \\dots, x_n)\\), where \\(n\\) is number of observations\nEach observed value \\(x_i\\) can only belong to one category level \\(\\{ C_1, C_2, \\dots \\}\\)\n\n\nLook at penguins data from the palmerpenguins package, focusing on species:\n\nlibrary(palmerpenguins)\nhead(penguins$species)\n\n[1] Adelie Adelie Adelie Adelie Adelie Adelie\nLevels: Adelie Chinstrap Gentoo\n\n\nHow could we summarize these data? What information would you report?\n\n\n\ntable(penguins$species)\n\n\n   Adelie Chinstrap    Gentoo \n      152        68       124"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#area-plots",
+    "href": "lectures/02-categorical.html#area-plots",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Area plots",
+    "text": "Area plots\n\n\nEach area corresponds to one categorical level\nArea is proportional to counts/frequencies/percentages\nDifferences between areas correspond to differences between counts/frequencies/percentages"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#bar-charts",
+    "href": "lectures/02-categorical.html#bar-charts",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Bar charts",
+    "text": "Bar charts\n\nlibrary(tidyverse)\npenguins |&gt;\n  ggplot(aes(x = species)) +\n  geom_bar()"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#behind-the-scenes-statistical-summaries",
+    "href": "lectures/02-categorical.html#behind-the-scenes-statistical-summaries",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Behind the scenes: statistical summaries",
+    "text": "Behind the scenes: statistical summaries\n\nFrom Chapter 3 of R for Data Science"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#spine-charts---height-version",
+    "href": "lectures/02-categorical.html#spine-charts---height-version",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Spine charts - height version",
+    "text": "Spine charts - height version\n\npenguins |&gt;\n  ggplot(aes(fill = species, x = \"\")) +\n  geom_bar()"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#spine-charts---width-version",
+    "href": "lectures/02-categorical.html#spine-charts---width-version",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Spine charts - width version",
+    "text": "Spine charts - width version\n\npenguins |&gt;\n  ggplot(aes(fill = species, x = \"\")) +\n  geom_bar() +\n  coord_flip()"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#what-does-a-bar-chart-show",
+    "href": "lectures/02-categorical.html#what-does-a-bar-chart-show",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "What does a bar chart show?",
+    "text": "What does a bar chart show?\nMarginal Distribution\n\nAssume categorical variable \\(X\\) has \\(K\\) categories: \\(C_1, \\dots, C_K\\)\nTrue marginal distribution of \\(X\\):\n\n\\[\nP(X = C_j) = p_j,\\ j \\in \\{ 1, \\dots, K \\}\n\\]\n\nWe have access to the Empirical Marginal Distribution\n\nObserved distribution of \\(X\\), our best estimate (MLE) of the marginal distribution of \\(X\\): \\(\\hat{p}_1\\), \\(\\hat{p}_2\\), \\(\\dots\\), \\(\\hat{p}_K\\)\n\n\ntable(penguins$species) / nrow(penguins)\n\n\n   Adelie Chinstrap    Gentoo \n0.4418605 0.1976744 0.3604651"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#bar-charts-with-proportions",
+    "href": "lectures/02-categorical.html#bar-charts-with-proportions",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Bar charts with proportions",
+    "text": "Bar charts with proportions\n\nafter_stat() indicates the aesthetic mapping is performed after statistical transformation\nUse after_stat(count) to access the stat_count() called by geom_bar()\n\n\npenguins |&gt;\n  ggplot(aes(x = species)) +\n  geom_bar(aes(y = after_stat(count) / sum(after_stat(count)))) + \n  labs(y = \"Proportion\")"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#compute-and-display-the-proportions-directly",
+    "href": "lectures/02-categorical.html#compute-and-display-the-proportions-directly",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Compute and display the proportions directly",
+    "text": "Compute and display the proportions directly\n\nUse group_by(), summarize(), and mutate() in a pipeline to compute then display the proportions directly\nNeed to indicate we are displaying the y axis as given, i.e., the identity function\n\n\npenguins |&gt;\n  group_by(species) |&gt; \n  summarize(count = n(), .groups = \"drop\") |&gt; \n  mutate(total = sum(count), \n         prop = count / total) |&gt; \n  ggplot(aes(x = species)) +\n  geom_bar(aes(y = prop), stat = \"identity\")"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#compute-and-display-the-proportions-directly-output",
+    "href": "lectures/02-categorical.html#compute-and-display-the-proportions-directly-output",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Compute and display the proportions directly",
+    "text": "Compute and display the proportions directly"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#what-about-uncertainty",
+    "href": "lectures/02-categorical.html#what-about-uncertainty",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "What about uncertainty?",
+    "text": "What about uncertainty?\n\nQuantify uncertainty for our estimate \\(\\hat{p}_j = \\frac{n_j}{n}\\) with the standard error:\n\n\\[\nSE(\\hat{p}_j) = \\sqrt{\\frac{\\hat{p}_j(1 - \\hat{p}_j)}{n}}\n\\]\n\n\nCompute \\(\\alpha\\)-level confidence interval (CI) as \\(\\hat{p}_j \\pm z_{1 - \\alpha / 2} \\cdot SE(\\hat{p}_j)\\)\nGood rule-of-thumb: construct 95% CI using \\(\\hat{p}_j \\pm 2 \\cdot SE(\\hat{p}_j)\\)\nApproximation justified by CLT, so CI could include values outside of [0,1]"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#add-standard-errors-to-bars",
+    "href": "lectures/02-categorical.html#add-standard-errors-to-bars",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Add standard errors to bars",
+    "text": "Add standard errors to bars\n\nNeed to remember each CI is for each \\(\\hat{p}_j\\) marginally, not jointly\nHave to be careful with multiple testing\n\n\npenguins |&gt;\n  group_by(species) |&gt; \n  summarize(count = n(), .groups = \"drop\") |&gt; \n  mutate(total = sum(count), \n         prop = count / total,\n         se = sqrt(prop * (1 - prop) / total), \n         lower = prop - 2 * se, \n         upper = prop + 2 * se) |&gt; \n  ggplot(aes(x = species)) +\n  geom_bar(aes(y = prop), stat = \"identity\") +\n  geom_errorbar(aes(ymin = lower, ymax = upper), \n                color = \"red\")"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#add-standard-errors-to-bars-output",
+    "href": "lectures/02-categorical.html#add-standard-errors-to-bars-output",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Add standard errors to bars",
+    "text": "Add standard errors to bars"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#why-does-this-matter",
+    "href": "lectures/02-categorical.html#why-does-this-matter",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Why does this matter?",
+    "text": "Why does this matter?"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#graphs-can-appear-the-same-with-very-different-statistical-conclusions---mainly-due-to-sample-size",
+    "href": "lectures/02-categorical.html#graphs-can-appear-the-same-with-very-different-statistical-conclusions---mainly-due-to-sample-size",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Graphs can appear the same with very different statistical conclusions - mainly due to sample size",
+    "text": "Graphs can appear the same with very different statistical conclusions - mainly due to sample size"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#useful-to-order-categories-by-frequency-with-forcats",
+    "href": "lectures/02-categorical.html#useful-to-order-categories-by-frequency-with-forcats",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Useful to order categories by frequency with forcats",
+    "text": "Useful to order categories by frequency with forcats\n\npenguins |&gt;\n  group_by(species) |&gt; \n  summarize(count = n(), .groups = \"drop\") |&gt; \n  mutate(total = sum(count), \n         prop = count / total,\n         se = sqrt(prop * (1 - prop) / total), \n         lower = prop - 2 * se, \n         upper = prop + 2 * se,\n         species = fct_reorder(species, prop)) |&gt;\n  ggplot(aes(x = species)) +\n  geom_bar(aes(y = prop), stat = \"identity\") +\n  geom_errorbar(aes(ymin = lower, ymax = upper), \n                color = \"red\")"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#useful-to-order-categories-by-frequency-with-forcats-output",
+    "href": "lectures/02-categorical.html#useful-to-order-categories-by-frequency-with-forcats-output",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Useful to order categories by frequency with forcats",
+    "text": "Useful to order categories by frequency with forcats"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#so-you-want-to-make-pie-charts",
+    "href": "lectures/02-categorical.html#so-you-want-to-make-pie-charts",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "So you want to make pie charts…",
+    "text": "So you want to make pie charts…\n\npenguins |&gt; \n  ggplot(aes(fill = species, x = \"\")) + \n  geom_bar(aes(y = after_stat(count))) +\n  coord_polar(theta = \"y\") +\n  theme_void()"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#friends-dont-let-friends-make-pie-charts",
+    "href": "lectures/02-categorical.html#friends-dont-let-friends-make-pie-charts",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Friends Don’t Let Friends Make Pie Charts",
+    "text": "Friends Don’t Let Friends Make Pie Charts"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#waffle-charts-are-cooler-anyway",
+    "href": "lectures/02-categorical.html#waffle-charts-are-cooler-anyway",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Waffle charts are cooler anyway…",
+    "text": "Waffle charts are cooler anyway…\n\nlibrary(waffle)\npenguins |&gt;\n  group_by(species) |&gt; \n  summarize(count = n(), .groups = \"drop\") |&gt; \n  ggplot(aes(fill = species, values = count)) +\n  geom_waffle(n_rows = 20, color = \"white\", flip = TRUE) +\n  coord_equal() +\n  theme_void()"
+  },
+  {
+    "objectID": "lectures/02-categorical.html#recap-and-next-steps",
+    "href": "lectures/02-categorical.html#recap-and-next-steps",
+    "title": "Principles and Visualizations for 1D Categorical Data",
+    "section": "Recap and next steps",
+    "text": "Recap and next steps\n\nDiscussed basic principles of data visualization and walked through variety of examples\nVisualize categorical data with bars!\nDisplay uncertainty with standard errors\n\n\n\nHW1 is due next Wednesday - complete GenAI module ON TIME!\nComplete HW0 by Thursday night! Confirms you have everything installed and can render .qmd files to PDF via tinytex\n\n\n\n\nNext time: Visualizing 2D categorical and 1D quantitative data\nRecommended reading:\n\nCW Chapter 10 Visualizing proportions, CW Chapter 16.2 Visualizing the uncertainty of point estimates, CW Chapter 11 Visualizing nested proportions\n\n\n\n\n\nmads-36613-fall24"
   },
   {
     "objectID": "index.html",
