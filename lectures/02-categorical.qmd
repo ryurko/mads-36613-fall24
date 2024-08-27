@@ -1,0 +1,535 @@
+---
+title: "Principles and Visualizations for 1D Categorical Data"
+author: "Prof Ron Yurko"
+footer:  "[mads-36613-fall24](https://ryurko.github.io/mads-36613-fall24/)"
+date: 2024-08-28
+engine: knitr
+format:
+  revealjs:
+    theme: theme.scss
+    chalkboard: true
+    pdf-separate-fragments: true
+    slide-number: c/t
+    smaller: true
+    code-line-numbers: true
+    linestretch: 1.25
+    html-math-method:
+      method: mathjax
+      url: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+---
+
+```{r}
+#| include: false
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center"
+)
+```
+
+## Reminders, previously, and today...
+
++ **HW1 was UPDATED and is due next Wednesday - complete the GenAI Literacy module ON TIME!**
+
++ **Complete HW0 by Thursday night!** Confirms you have everything installed and can [render `.qmd` files to PDF via `tinytex`](https://quarto.org/docs/output-formats/pdf-basics.html)
+
+. . .
+
++ Walked through course logistics (**READ THE SYLLABUS**)
+
++ Introduced the **Grammar of Graphics** and `ggplot2` basics
+
+. . .
+
+**TODAY:**
+
++ Discuss data visualization principles and the role of infographics
+
++ Visualizing categorical data (starting with 1D)
+
+
+## In the beginning...
+
+::: {style="font-size: 80%;"}
+
+**Michael Florent van Langren published the first (known) statistical graphic in 1644**
+
+![](https://upload.wikimedia.org/wikipedia/commons/6/66/Grados_de_la_Longitud.jpg){fig-align="center" width=80%}
+
++ Plots different estimates of the longitudinal distance between Toledo, Spain and Rome, Italy
+
++ i.e., visualization of collected data to aid in estimation of parameter
+
+:::
+
+. . .
+
+![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDU0fPHI7y9TstYN0hASi7wlDcBUDnNoTS8yNjXehDAZVJ17glqqGBI7Wxt6y_wdgyyw&usqp=CAU){fig-align="center" width=80%}
+
+
+---
+
+## [John Snow](https://www.theguardian.com/news/datablog/2013/mar/15/john-snow-cholera-map) Knows Something About Cholera
+
+![](https://media.nationalgeographic.org/assets/photos/000/276/27636.jpg){fig-align="center" width=80%}
+
+
+---
+
+## [Charles Minard's](https://www.datavis.ca/gallery/minard/minard.pdf) Map of Napoleon's Russian Disaster
+
+![](https://datavizblog.files.wordpress.com/2013/05/map-full-size1.png){fig-align="center" width=90%}
+
+---
+
+## [Florence Nightingale's](https://www.datavis.ca/gallery/flo.php) Rose Diagram 
+
+![](https://daily.jstor.org/wp-content/uploads/2020/08/florence_nightingagle_data_visualization_visionary_1050x700.jpg){fig-align="center" width=75%}
+
+
+---
+
+## [Milestones in Data Visualization History](https://friendly.github.io/HistDataVis/)
+
+![](https://friendly.github.io/HistDataVis/figs-web/07_1-mileyears3.png){fig-align="center" width=80%}
+
+---
+
+## [Edward Tufte's](https://www.edwardtufte.com/tufte/) Principles of Data Visualization
+
+***Graphics***: visually display measured quantities by combining points, lines, coordinate systems, numbers, symbols, words, shading, color
+
+***Often our goal is to show data and/or communicate a story***
+
+. . .
+
++ Induce viewer to think about substance, __not graphical methodology__
+
++ Make large, complex datasets more coherent 
+
++ Encourage comparison of different pieces of data
+
++ __Describe, explore, and identify relationships__
+
++ __Avoid data distortion and data decoration__
+
++ Use consistent graph design
+
+. . .
+
+***Avoid graphs that lead to misleading conclusions!***
+
+---
+
+## How to Fail this Class:
+
+![](https://socviz.co/assets/ch-01-chartjunk-life-expectancy.png){fig-align="center" width=65%}
+
+---
+
+## What about this spiral?
+
+![](https://github.com/ryurko/SURE22-examples/blob/main/figures/lecture_examples/nyt_ex.png?raw=true){fig-align="center" width=125%}
+
+. . .
+
+***[Requires distortion](https://junkcharts.typepad.com/junk_charts/nyt/)***
+
+---
+
+## Infographics to communicate a story (check out [FlowingData](https://flowingdata.com/) for more examples)
+
+![](https://i0.wp.com/flowingdata.com/wp-content/uploads/2024/08/nba-players-at-olympics-sportradar-scaled-e1723395396398.jpeg?resize=1527%2C2048&quality=89&ssl=1){fig-align="center" width=65%}
+
+---
+
+## [Alberto Cairo](https://www.albertocairo.com/) and the art of insight
+
+![](https://academictechnologies.it.miami.edu/_assets/images/images/faculty-engagement/faculty-success-stories/1melgar-big.png){fig-align="center" width=65%}
+
+
+
+---
+
+## 1D Categorical Data
+
+Two different versions of categorical:
+
+1. **Nominal**: coded with arbitrary numbers, i.e., no real order
+
++ Examples: race, gender, species, text
+
+. . .
+
+2. **Ordinal**: levels with a meaningful order
+
++ Examples: education level, grades, ranks
+  
+. . .
+
+__NOTE__: `R` and `ggplot` considers a categorical variable to be `factor`
+
++ `R` will always treat categorical variables as ordinal! Defaults to alphabetical...
+  
++ We will need to manually define the `factor` levels
+
+---
+
+## 1D categorical data structure
+
++ Observations are collected into a vector $(x_1, \dots, x_n)$, where $n$ is number of observations
+
++ Each observed value $x_i$ can only belong to one category level $\{ C_1, C_2, \dots \}$
+
+. . .
+
+Look at `penguins` data from the [`palmerpenguins`](https://allisonhorst.github.io/palmerpenguins/) package, focusing on `species`:
+
+```{r}
+library(palmerpenguins)
+head(penguins$species)
+```
+
+***How could we summarize these data? What information would you report?***
+
+. . .
+
+```{r}
+table(penguins$species)
+```
+
+---
+
+## Area plots
+
+![](https://clauswilke.com/dataviz/directory_of_visualizations_files/figure-html/proportions-1.png){fig-align="center" width=65%}
+
++ Each area corresponds to one categorical level
+
++ Area is proportional to counts/frequencies/percentages
+
++ Differences between areas correspond to differences between counts/frequencies/percentages
+
+
+---
+
+## Bar charts
+
+```{r}
+#| code-line-numbers: "3-4"
+library(tidyverse)
+penguins |>
+  ggplot(aes(x = species)) +
+  geom_bar()
+```
+
+
+
+---
+
+## Behind the scenes: statistical summaries
+
+![](https://d33wubrfki0l68.cloudfront.net/70a3b18a1128c785d8676a48c005ee9b6a23cc00/7283c/images/visualization-stat-bar.png){fig-align="center" width=65%}
+
+From [Chapter 3 of R for Data Science](https://r4ds.had.co.nz/data-visualisation.html)
+
+---
+
+## Spine charts - height version
+
+```{r}
+#| code-line-numbers: "2"
+penguins |>
+  ggplot(aes(fill = species, x = "")) +
+  geom_bar()
+```
+
+---
+
+## Spine charts - width version
+
+```{r}
+#| code-line-numbers: "4"
+penguins |>
+  ggplot(aes(fill = species, x = "")) +
+  geom_bar() +
+  coord_flip()
+```
+
+
+---
+
+## What does a bar chart show?
+
+**Marginal Distribution**
+
++ Assume categorical variable $X$ has $K$ categories: $C_1, \dots, C_K$
+
++ **True** marginal distribution of $X$: 
+
+$$
+P(X = C_j) = p_j,\ j \in \{ 1, \dots, K \}
+$$
+
+. . .
+
+**We have access to the Empirical Marginal Distribution**
+
++ Observed distribution of $X$, our best estimate (MLE) of the marginal distribution of $X$: $\hat{p}_1$, $\hat{p}_2$, $\dots$, $\hat{p}_K$
+
+
+```{r}
+table(penguins$species) / nrow(penguins)
+```
+
+
+---
+
+## Bar charts with proportions
+
++ [`after_stat()`](https://ggplot2.tidyverse.org/reference/aes_eval.html) indicates the aesthetic mapping is performed after statistical transformation
+
++ Use `after_stat(count)` to access the `stat_count()` called by `geom_bar()`
+
+```{r}
+#| code-line-numbers: "3"
+penguins |>
+  ggplot(aes(x = species)) +
+  geom_bar(aes(y = after_stat(count) / sum(after_stat(count)))) + 
+  labs(y = "Proportion")
+```
+
+
+---
+
+## Compute and display the proportions directly
+
++ Use `group_by()`, `summarize()`, and `mutate()` in a pipeline to compute then display the proportions directly
+
++ Need to indicate we are displaying the `y` axis as given, i.e., the identity function
+
+
+```{r}
+#| output-location: slide
+#| code-line-numbers: "2-5,7"
+penguins |>
+  group_by(species) |> 
+  summarize(count = n(), .groups = "drop") |> 
+  mutate(total = sum(count), 
+         prop = count / total) |> 
+  ggplot(aes(x = species)) +
+  geom_bar(aes(y = prop), stat = "identity") 
+```
+
+
+---
+
+## What about uncertainty?
+
++ Quantify uncertainty for our estimate $\hat{p}_j = \frac{n_j}{n}$ with the **standard error**:
+
+$$
+SE(\hat{p}_j) = \sqrt{\frac{\hat{p}_j(1 - \hat{p}_j)}{n}}
+$$
+
+. . .
+
++ Compute $\alpha$-level __confidence interval__ (CI) as $\hat{p}_j \pm z_{1 - \alpha / 2} \cdot SE(\hat{p}_j)$
+
++ Good rule-of-thumb: construct 95% CI using $\hat{p}_j \pm 2 \cdot SE(\hat{p}_j)$
+
++ Approximation justified by CLT, so CI could include values outside of [0,1]
+
+---
+
+## Add standard errors to bars
+
++ Need to remember each CI is for each $\hat{p}_j$ marginally, **not** jointly
+
++ Have to be careful with __multiple testing__ 
+
+
+```{r}
+#| output-location: slide
+#| code-line-numbers: "6-8,11-12"
+penguins |>
+  group_by(species) |> 
+  summarize(count = n(), .groups = "drop") |> 
+  mutate(total = sum(count), 
+         prop = count / total,
+         se = sqrt(prop * (1 - prop) / total), 
+         lower = prop - 2 * se, 
+         upper = prop + 2 * se) |> 
+  ggplot(aes(x = species)) +
+  geom_bar(aes(y = prop), stat = "identity") +
+  geom_errorbar(aes(ymin = lower, ymax = upper), 
+                color = "red") 
+```
+
+
+---
+
+## Why does this matter?
+
+
+```{r}
+#| echo: false
+#| layout-ncol: 2
+#| fig-height: 8
+penguins |>
+  group_by(species) |> 
+  summarize(count = n(), .groups = "drop") |> 
+  mutate(total = sum(count), 
+         prop = count / total,
+         se = sqrt(prop * (1 - prop) / total), #<<
+         lower = prop - 2 * se, #<<
+         upper = prop + 2 * se) |> #<<
+  ggplot(aes(x = species)) +
+  geom_bar(aes(y = prop),
+           stat = "identity") +
+  theme(axis.title = element_text(size = 18),
+        axis.text = element_text(size = 16)) #<<
+
+penguins |>
+  group_by(species) |> 
+  summarize(count = n(), .groups = "drop") |> 
+  mutate(total = sum(count), 
+         prop = count / total,
+         se = sqrt(prop * (1 - prop) / total), 
+         lower = prop - 2 * se, 
+         upper = prop + 2 * se) |> 
+  ggplot(aes(x = species)) +
+  geom_bar(aes(y = prop),
+           stat = "identity") +
+  theme(axis.title = element_text(size = 18),
+        axis.text = element_text(size = 16)) #<<
+```
+
+---
+
+## Graphs can appear the same with very different statistical conclusions - mainly due to sample size
+
+
+```{r}
+#| echo: false
+#| layout-ncol: 2
+#| fig-height: 8
+penguins |>
+  group_by(species) |> 
+  summarize(count = n(), .groups = "drop") |> 
+  mutate(total = sum(count), 
+         prop = count / total,
+         se = sqrt(prop * (1 - prop) / 30), #<<
+         lower = prop - 2 * se, #<<
+         upper = prop + 2 * se) |> #<<
+  ggplot(aes(x = species)) +
+  geom_bar(aes(y = prop),
+           stat = "identity") +
+  geom_errorbar(aes(ymin = lower, #<<
+                    ymax = upper), #<<
+                color = "red") +
+  theme(axis.title = element_text(size = 18),
+        axis.text = element_text(size = 16)) #<<
+
+penguins |>
+  group_by(species) |> 
+  summarize(count = n(), .groups = "drop") |> 
+  mutate(total = sum(count), 
+         prop = count / total,
+         se = sqrt(prop * (1 - prop) / total), #<<
+         lower = prop - 2 * se, #<<
+         upper = prop + 2 * se) |> #<<
+  ggplot(aes(x = species)) +
+  geom_bar(aes(y = prop),
+           stat = "identity") +
+  geom_errorbar(aes(ymin = lower, #<<
+                    ymax = upper), #<<
+                color = "red") +
+  theme(axis.title = element_text(size = 18),
+        axis.text = element_text(size = 16)) 
+```
+
+
+---
+
+##  Useful to order categories by frequency with [`forcats`](https://forcats.tidyverse.org/)
+
+
+```{r}
+#| output-location: slide
+#| code-line-numbers: "9"
+penguins |>
+  group_by(species) |> 
+  summarize(count = n(), .groups = "drop") |> 
+  mutate(total = sum(count), 
+         prop = count / total,
+         se = sqrt(prop * (1 - prop) / total), 
+         lower = prop - 2 * se, 
+         upper = prop + 2 * se,
+         species = fct_reorder(species, prop)) |>
+  ggplot(aes(x = species)) +
+  geom_bar(aes(y = prop), stat = "identity") +
+  geom_errorbar(aes(ymin = lower, ymax = upper), 
+                color = "red") 
+```
+
+
+---
+
+## So you want to make pie charts...
+
+```{r}
+#| code-line-numbers: "2-5"
+penguins |> 
+  ggplot(aes(fill = species, x = "")) + 
+  geom_bar(aes(y = after_stat(count))) +
+  coord_polar(theta = "y") +
+  theme_void() 
+```
+
+---
+
+## [Friends Don't Let Friends Make Pie Charts](https://github.com/cxli233/FriendsDontLetFriends)
+
+![](https://raw.githubusercontent.com/cxli233/FriendsDontLetFriends/9267fcbb0e5db5a95c2cf624db3c53b50d6ee2fb/Results/dont_pie_chart.svg){fig-align="center" width=80%}
+
+---
+
+## [Waffle charts](https://github.com/hrbrmstr/waffle) are cooler anyway...
+
+```{r}
+library(waffle)
+penguins |>
+  group_by(species) |> 
+  summarize(count = n(), .groups = "drop") |> 
+  ggplot(aes(fill = species, values = count)) +
+  geom_waffle(n_rows = 20, color = "white", flip = TRUE) +
+  coord_equal() +
+  theme_void()
+```
+
+
+## Recap and next steps
+
++ Discussed basic principles of data visualization and walked through variety of examples
+
++ Visualize categorical data with bars!
+
++ Display uncertainty with standard errors
+
+. . .
+
++ **HW1 is due next Wednesday - complete GenAI module ON TIME!**
+
++ **Complete HW0 by Thursday night!** Confirms you have everything installed and can [render `.qmd` files to PDF via `tinytex`](https://quarto.org/docs/output-formats/pdf-basics.html)
+
+. . .
+
++ **Next time**: Visualizing 2D categorical and 1D quantitative data
+
++ Recommended reading: 
+
+  + [CW Chapter 10 Visualizing proportions](https://clauswilke.com/dataviz/visualizing-proportions.html), [CW Chapter 16.2 Visualizing the uncertainty of point estimates](https://clauswilke.com/dataviz/visualizing-uncertainty.html#visualizing-the-uncertainty-of-point-estimates), [CW Chapter 11 Visualizing nested proportions](https://clauswilke.com/dataviz/nested-proportions.html)
+
+

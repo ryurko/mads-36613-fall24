@@ -2,6 +2,7 @@
 title: "Lectures"
 ---
 
-| Lecture   | Date    | Title                                | Materials                        |
-|-----------|---------|--------------------------------------|----------------------------------|
-| 1         | Aug 26  | Introduction and Grammar of Graphics | [slides](lectures/01-intro.qmd)  |
+| Lecture   | Date    | Title                                | Materials                              |
+|-----------|---------|--------------------------------------|----------------------------------------|
+| 1         | Aug 26  | Introduction and Grammar of Graphics | [slides](lectures/01-intro.qmd)        |
+| 2         | Aug 28  | Principles and 1D Categorical Data   | [slides](lectures/02-categorical.qmd)  |
