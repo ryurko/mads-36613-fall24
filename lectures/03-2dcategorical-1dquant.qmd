@@ -1,0 +1,696 @@
+---
+title: "Visualizations for 2D Categorical and 1D Quantitative Data"
+author: "Prof Ron Yurko"
+footer:  "[mads-36613-fall24](https://ryurko.github.io/mads-36613-fall24/)"
+date: 2024-09-04
+engine: knitr
+format:
+  revealjs:
+    theme: theme.scss
+    chalkboard: true
+    pdf-separate-fragments: true
+    slide-number: c/t
+    smaller: true
+    code-line-numbers: true
+    linestretch: 1.25
+    html-math-method:
+      method: mathjax
+      url: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+---
+
+```{r}
+#| include: false
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center"
+)
+
+library(tidyverse)
+library(palmerpenguins)
+```
+
+## Reminders, previously, and today...
+
++ **HW1 is due TONIGHT!**
+
++ **HW2 is posted (due next Wednesday)**
+
+. . .
+
++ Discussed data visualization principles and the role of infographics
+
++ Visualized 1D categorical data, i.e., make bar charts!
+
+. . .
+
+**TODAY:**
+
++ Pie charts...
+
++ Visualizing 2D categorical data
+
++ Begin 1D quantitative data
+
+---
+
+## So you want to make pie charts...
+
+```{r}
+#| code-line-numbers: "2-5"
+penguins |> 
+  ggplot(aes(fill = species, x = "")) + 
+  geom_bar(aes(y = after_stat(count))) +
+  coord_polar(theta = "y") +
+  theme_void() 
+```
+
+---
+
+## [Friends Don't Let Friends Make Pie Charts](https://github.com/cxli233/FriendsDontLetFriends)
+
+![](https://raw.githubusercontent.com/cxli233/FriendsDontLetFriends/9267fcbb0e5db5a95c2cf624db3c53b50d6ee2fb/Results/dont_pie_chart.svg){fig-align="center" width=80%}
+
+---
+
+## [Waffle charts](https://github.com/hrbrmstr/waffle) are cooler anyway...
+
+```{r}
+library(waffle)
+penguins |>
+  group_by(species) |> 
+  summarize(count = n(), .groups = "drop") |> 
+  ggplot(aes(fill = species, values = count)) +
+  geom_waffle(n_rows = 20, color = "white", flip = TRUE) +
+  coord_equal() +
+  theme_void()
+```
+
+
+
+---
+
+## 2D categorical basics: marginal / conditional distribution 
+
+```{r}
+addmargins(table("Species" = penguins$species, "Island" = penguins$island))
+```
+
++ Column and row sums: marginal distributions
+
++ Values within rows: conditional distribution for `Island` given `Species`
+
++ Values within columns: conditional distribution for `Species` given `Island`
+
++ Bottom right: total number of observations
+
+---
+
+## Connecting distributions to visualizations
+
+Five distributions for two categorical variables $A$ and $B$:
+
+- __Marginals__:  $P(A)$ and $P(B)$
+
+- __Conditionals__: $P(A | B)$ and $P(B|A)$
+
+- __Joint__: $P(A, B)$
+
+We use bar charts to visualize marginal distributions for categorical variables...
+
+. . .
+
+**And we'll use more bar charts to visualize conditional and joint distributions!**
+
+---
+
+## Stacked bar charts - a bar chart of spine charts
+
+
+```{r}
+#| code-line-numbers: "2"
+penguins |>
+  ggplot(aes(x = species, fill = island)) +
+  geom_bar() + 
+  theme_bw()
+```
+
+::: {style="font-size: 75%;"}
+
++ Easy to see marginal of `species`,  i.e., $P($ `x` $)$
+
++ Can see conditional of `island` | `species`,  i.e., $P($ `fill` | `x` $)$
+
++ Harder to see conditional of `species` | `island`,  i.e., $P($ `x` | `fill` $)$
+
+:::
+
+---
+
+## Side-by-side bar charts
+
+```{r}
+#| code-line-numbers: "3"
+penguins |>
+  ggplot(aes(x = species, fill = island)) + 
+  geom_bar(position = "dodge") +
+  theme_bw()
+```
+
+::: {style="font-size: 75%;"}
+
++ Easy to see conditional of `island` | `species`,  i.e., $P($ `fill` | `x` $)$
+
++ Can see conditional of `species` | `island`,  i.e., $P($ `x` | `fill` $)$
+
+:::
+
+---
+
+## Side-by-side bar charts
+
+```{r}
+#| code-line-numbers: "3"
+penguins |>
+  ggplot(aes(x = species, fill = island)) + 
+  geom_bar(position = position_dodge(preserve = "single")) +
+  theme_bw()
+```
+
+::: {style="font-size: 75%;"}
+
++ Easy to see conditional of `island` | `species`,  i.e., $P($ `fill` | `x` $)$
+
++ Can see conditional of `species` | `island`,  i.e., $P($ `x` | `fill` $)$
+
+:::
+
+---
+
+## [Complete](https://tidyr.tidyverse.org/reference/complete.html) missing values to preserve location
+
+```{r}
+#| code-line-numbers: "2-6"
+penguins |>
+  count(species, island) |>
+  complete(species = unique(species), island = unique(island), 
+           fill = list(n = 0)) |>
+  ggplot(aes(x = species, y = n, fill = island)) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_bw()
+```
+
+
+---
+
+## What do you prefer?
+
+```{r}
+#| echo: false
+#| layout-ncol: 2
+#| fig-height: 9
+penguins |>
+  ggplot(aes(x = species, fill = island)) +
+  geom_bar() + 
+  theme_bw() +
+  theme(text = element_text(size = 18))
+
+penguins |>
+  count(species, island) |>
+  complete(species = unique(species), island = unique(island), 
+           fill = list(n = 0)) |>
+  ggplot(aes(x = species, y = n, fill = island)) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_bw() +
+  theme(text = element_text(size = 18))
+```
+
+
+---
+
+## Chi-squared test for 1D categorical data:
+
+::: {style="font-size: 75%;"}
+
++ __Null hypothesis__ $H_0$: $p_1 = p_2 = \dots = p_K$, compute the test statistic:
+
+$$
+\chi^2 = \sum_{j=1}^K \frac{(O_j - E_j)^2}{E_j}
+$$
+
++ $O_j$: observed counts in category $j$
+
++ $E_j$: expected counts under $H_0$, i.e., each category is equally to occur $n / K = p_1 = p_2 = \dots = p_K$
+
+:::
+
+. . .
+
+```{r}
+chisq.test(table(penguins$species))
+```
+
+---
+
+## Hypothesis testing review
+
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+::: {style="font-size: 85%;"}
+
+Computing $p$-values works like this:
+
+- Choose a test statistic.
+
+- Compute the test statistic in your dataset.
+
+- Is test statistic "unusual" compared to what I would expect under $H_0$?
+
+- Compare $p$-value to __target error rate__ $\alpha$ (typically referred to as target level $\alpha$ )
+
+- Typically choose $\alpha = 0.05$ 
+
+  - i.e., if we reject null  hypothesis at $\alpha = 0.05$ then, assuming $H_0$ is true, there is a 5% chance it is a false positive (aka Type 1 error)
+  
+
+:::
+
+:::
+
+::: {.column width="50%"}
+
+::: {.fragment}
+
+![](https://measuringu.com/wp-content/uploads/2021/04/042121-F2.jpg){fig-align="center"}
+
+:::
+
+:::
+
+::::
+
+---
+
+## Inference for 2D categorical data 
+
+::: {style="font-size: 75%;"}
+
+Again we use the __chi-squared test__:
+
++ __Null hypothesis__ $H_0$: variables $A$ and $B$ are independent, compute the test statistic:
+
+
+$$\chi^2 = \sum_{i}^{K_A} \sum_{j}^{K_B} \frac{(O_{ij} - E_{ij})^2}{E_{ij}}$$
+
+
++ $O_{ij}$: observed counts in contingency table
+
++ $E_{ij}$: expected counts under $H_0$
+
+$$
+\begin{aligned}
+E_{ij} &= n \cdot P(A = a_i, B = b_j) \\
+&= n \cdot P(A = a_i) P(B = b_j) \\
+&= n \cdot \left( \frac{n_{i \cdot}}{n} \right) \left( \frac{ n_{\cdot j}}{n} \right)
+\end{aligned}
+$$
+
+:::
+
+---
+
+## Inference for 2D categorical data 
+
+::: {style="font-size: 75%;"}
+
+Again we use the __chi-squared test__:
+
++ __Null hypothesis__ $H_0$: variables $A$ and $B$ are independent, compute the test statistic:
+
+
+$$\chi^2 = \sum_{i}^{K_A} \sum_{j}^{K_B} \frac{(O_{ij} - E_{ij})^2}{E_{ij}}$$
+
+
++ $O_{ij}$: observed counts in contingency table
+
++ $E_{ij}$: expected counts under $H_0$
+
+:::
+
+```{r}
+chisq.test(table(penguins$species, penguins$island))
+```
+
+---
+
+## Visualize independence test with mosaic plots
+
+::: {style="font-size: 75%;"}
+
+Two variables are __independent__ if knowing the level of one tells us nothing about the other
+
++ i.e.  $P(A | B) = P(A)$, and that $P(A, B) = P(A) \times P(B)$
+
+Create a __mosaic__ plot using __base `R`__
+
+:::
+
+```{r}
+mosaicplot(table(penguins$species, penguins$island)) 
+```
+
+
+---
+
+## Shade by _Pearson residuals_
+
+::: {style="font-size: 75%;"}
+
++ The __test statistic__ is: 
+
+$$\chi^2 = \sum_{i}^{K_A} \sum_{j}^{K_B} \frac{(O_{ij} - E_{ij})^2}{E_{ij}}$$
+
++ Define the _Pearson residuals_ as:
+
+$$r_{ij} = \frac{O_{ij} - E_{ij}}{\sqrt{E_{ij}}}$$
+
+- Side-note: In general, Pearson residuals are $\frac{\text{residuals}}{\sqrt{\text{variance}}}$
+
+:::
+
+. . .
+
+::: {style="font-size: 75%;"}
+
++ $r_{ij} \approx 0 \rightarrow$ observed counts are close to expected counts
+
++ $|r_{ij}| > 2 \rightarrow$ "significant" at level $\alpha = 0.05$.
+
++ Very positive $r_{ij} \rightarrow$ more than expected, while very negative $r_{ij} \rightarrow$ fewer than expected
+
++ **Color by Pearson residuals** to tell us which combos are much bigger/smaller than expected.
+
+:::
+
+---
+
+```{r}
+mosaicplot(table(penguins$species, penguins$island), shade = TRUE)
+```
+
+
+---
+
+```{r}
+mosaicplot(table(penguins$island, penguins$sex), shade = TRUE,
+           main = "Distribution of penguins' sex does not vary across islands")
+```
+
+
+---
+
+## Bonus: [Treemaps](https://cran.r-project.org/web/packages/treemapify/vignettes/introduction-to-treemapify.html) do not require same categorical levels across subgroups 
+
+```{r}
+#| output-location: slide
+library(treemapify)
+penguins |>
+  group_by(species, island) |>
+  summarize(count = n(), .groups = "drop") |>
+  ggplot(aes(area = count, subgroup = island,
+             label = species,
+             fill = interaction(species, island))) +
+  # 1. Draw species borders and fill colors
+  geom_treemap() +
+  # 2. Draw island borders
+  geom_treemap_subgroup_border() +
+  # 3. Print island text
+  geom_treemap_subgroup_text(place = "centre", grow = T, 
+                             alpha = 0.5, colour = "black",
+                             fontface = "italic", min.size = 0) +
+  # 4. Print species text
+  geom_treemap_text(colour = "white", place = "topleft", 
+                    reflow = T) +
+  guides(colour = "none", fill = "none")
+```
+
+---
+
+## 1D Quantitative Data
+
+Observations are collected into a vector $(x_1, \dots, x_n)$, $x_i \in \mathbb{R}$ (or $\mathbb{R}^+$, $\mathbb{Z}$)
+
+Common __summary statistics__ for 1D quantitative data:
+
+. . .
+
++ __Center__: Mean, median, weighted mean, mode
+
+  + Related to the first moment, i.e., $\mathbb{E}[X]$
+
+. . .
+
++ __Spread__: Variance, range, min/max, quantiles, IQR
+
+  + Related to the second moment, i.e., $\mathbb{E}[X^2]$
+  
+. . .
+
++ __Shape__: symmetry, skew, kurtosis ("peakedness")
+
+  + Related to higher order moments, i.e., skewness is $\mathbb{E}[X^3]$, kurtosis is $\mathbb{E}[X^4]$
+  
+
+Compute various statistics with `summary()`, `mean()`, `median()`, `quantile()`, `range()`, `sd()`, `var()`, etc.
+
+---
+
+## Box plots visualize summary statistics
+
+```{r}
+#| code-line-numbers: "2-4"
+penguins |>
+  ggplot(aes(y = flipper_length_mm)) +
+  geom_boxplot(aes(x = "")) +
+  coord_flip()
+```
+
+
+---
+
+## Histograms display 1D continuous distributions
+
+```{r}
+#| code-line-numbers: "2-3"
+penguins |>
+  ggplot(aes(x = flipper_length_mm)) +
+  geom_histogram()
+```
+
+
+---
+
+## [Do NOT rely on box plots...](https://www.autodesk.com/research/publications/same-stats-different-graphs)
+
+
+ 
+
+---
+
+## What do visualizations of continuous distributions display?
+
+__Probability that continuous variable $X$ takes a particular value is 0__ 
+
+e.g., $P$ (`flipper_length_mm` $= 200$) $= 0$, _why_?
+
+. . .
+
+Instead we use the __probability density function (PDF)__ to provide a __relative likelihood__ 
+
+For continuous variables we can use the __cumulative distribution function (CDF)__,
+
+$$
+F(x) = P(X \leq x)
+$$
+
+. . .
+
+For $n$ observations we can easily compute the __Empirical CDF (ECDF)__:
+
+
+$$\hat{F}_n(x)  = \frac{\text{# obs. with variable} \leq x}{n} = \frac{1}{n} \sum_{i=1}^{n}1(x_i \leq x)$$
+
+
+- where $1()$ is the indicator function, i.e. `ifelse(x_i <= x, 1, 0)`
+
+---
+
+## Display full distribution with ECDF plot
+
+```{r}
+#| code-line-numbers: "3"
+penguins |>
+  ggplot(aes(x = flipper_length_mm)) + 
+  stat_ecdf() +
+  theme_bw()
+```
+
+---
+
+## What's the relationship between these two figures?
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(patchwork)
+pens_hist <- penguins |>
+  ggplot(aes(x = flipper_length_mm)) +
+  geom_histogram()
+pens_ecdf <- penguins |>
+  ggplot(aes(x = flipper_length_mm)) + 
+  stat_ecdf() +
+  theme_bw()
+pens_hist + pens_ecdf
+```
+
+---
+
+## What about comparing to theoretical distributions?
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Normal_Distribution_PDF.svg/2560px-Normal_Distribution_PDF.svg.png){fig-align="center" width=100%}
+
+:::
+
+::: {.column width="50%"}
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Normal_Distribution_CDF.svg/2560px-Normal_Distribution_CDF.svg.png){fig-align="center" width=100%}
+
+:::
+
+::::
+
+
+---
+
+## One-Sample Kolmogorov-Smirnov Test
+
+- We compare the ECDF $\hat{F}(x)$ to a theoretical distribution's CDF $F(x)$
+
+- The one sample KS test statistic is: $\text{max}_x |\hat{F}(x) - F(x)|$
+
+![](https://upload.wikimedia.org/wikipedia/commons/c/cf/KS_Example.png){fig-align="center" width=80%}
+
+---
+
+## Flipper length example
+
+What if we assume `flipper_length_mm` follows Normal distribution? 
+
++ i.e., `flipper_length_mm` $\sim N(\mu, \sigma^2)$
+
+Need estimates for mean $\mu$ and standard deviation $\sigma$:
+
+```{r}
+flipper_length_mean <- mean(penguins$flipper_length_mm, na.rm = TRUE)
+flipper_length_sd <- sd(penguins$flipper_length_mm, na.rm = TRUE)
+```
+
+. . .
+
+Perform one-sample KS test using [`ks.test()`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/ks.test.html):
+
+```{r}
+ks.test(x = penguins$flipper_length_mm, y = "pnorm",
+        mean = flipper_length_mean, sd = flipper_length_sd)
+```
+
+
+---
+
+## Flipper length example
+
+```{r}
+#| label: kstest-plot
+#| echo: false
+# First create the ECDF function for the variable:
+fl_ecdf <- ecdf(penguins$flipper_length_mm)
+# Compute the absolute value of the differences between the ECDF for the values
+# and the theoretical values with assumed Normal distribution:
+abs_ecdf_diffs <- abs(fl_ecdf(penguins$flipper_length_mm) - pnorm(penguins$flipper_length_mm,
+                                                                  mean = flipper_length_mean, sd = flipper_length_sd))
+# Now find where the maximum difference is:
+max_abs_ecdf_diff_i <- which.max(abs_ecdf_diffs)
+# Get this flipper length value:
+max_fl_diff_value <- penguins$flipper_length_mm[max_abs_ecdf_diff_i]
+# Plot the ECDF with the theoretical Normal and KS test info:
+penguins |>
+  ggplot(aes(x = flipper_length_mm)) +
+  stat_ecdf(color = "darkblue") +
+  # Use stat_function to draw the Normal ECDF
+  stat_function(fun = pnorm, args = list(mean = flipper_length_mean, sd = flipper_length_sd), color = "black", linetype = "dashed") +
+  # Draw KS test line:
+  geom_vline(xintercept = max_fl_diff_value, color = "red") +
+  # Add text with the test results (x and y are manually entered locations)
+  annotate(geom = "text", x = 215, y = .25, label = "KS test stat = 0.12428\np-value = 5.163e-05") + 
+  labs(x = "Flipper length (mm)", y = "Fn(x)") + theme_bw()
+```
+
+
+---
+
+### Visualize distribution comparisons using quantile-quantile (q-q) plots
+
+```{r}
+#| code-line-numbers: "2-4"
+penguins |>
+  ggplot(aes(sample = flipper_length_mm)) +
+  stat_qq() +
+  stat_qq_line()
+```
+
+
+---
+
+## Recap and next steps
+
++ Visualize categorical data with bars! Regular, stacked, side-by-side, mosaic
+
++ Display uncertainty: (1D) standard errors, (2D) Pearson residuals
+
++ Visualize 1D quantitative data with histograms, ECDFs, but never use a box plot by itself
+
+. . .
+
++ **HW1 is due TONIGHT!**
+
++ **HW2 is posted (due next Wednesday)**
+
+. . .
+
++ **Next time**: Density Estimation
+
++ Recommended reading: 
+
++ [CW Chapter 11 Visualizing nested proportions](https://clauswilke.com/dataviz/nested-proportions.html), [CW Chapter 7 Visualizing distributions: Histograms and density plots](https://clauswilke.com/dataviz/histograms-density-plots.html), [CW Chapter 8 Visualizing distributions: Empirical cumulative distribution functions and q-q plots](https://clauswilke.com/dataviz/ecdf-qq.html)
+
+
+---
+
+## BONUS: Visualizing the KS test statistic
+
+```{r}
+#| echo: true
+#| ref.label: kstest-plot
+#| eval: false
+```
+
+
