@@ -1,0 +1,663 @@
+---
+title: "Visualizing Quantitative Distributions"
+author: "Prof Ron Yurko"
+footer:  "[mads-36613-fall24](https://ryurko.github.io/mads-36613-fall24/)"
+date: 2024-09-09
+engine: knitr
+format:
+  revealjs:
+    theme: theme.scss
+    chalkboard: true
+    pdf-separate-fragments: true
+    slide-number: c/t
+    smaller: true
+    code-line-numbers: true
+    linestretch: 1.25
+    html-math-method:
+      method: mathjax
+      url: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+---
+
+```{r}
+#| include: false
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center"
+)
+
+library(tidyverse)
+library(palmerpenguins)
+```
+
+## Reminders, previously, and today...
+
++ **HW2 is due Wednesday Sept 11th!**
+
++ **HW3 is posted and due next Wednesday Sept 18th**
+
+. . .
+
++ Visualized 2D categorical data with more bar charts, include mosaic plots
+
++ Walked through different approaches for 1D quantitative data visualization
+
+. . .
+
+**TODAY:**
+
++ Thinking carefully about histograms
+
++ Introduction to density estimation
+
++ Visualization 1D quantitative by 1D categorical distributions
+
+---
+
+## Simulate data from mixture of Normal distributions
+
+
+Will sample 100 draws from $N(-1.5, 1)$ and 100 draws from $N(1.5, 1)$
+
+```{r}
+#| echo: false
+tibble(x = c(-5, 5)) |>
+  ggplot(aes(x)) +
+  geom_function(fun = function(x) dnorm(x, mean = -1.5, sd = 1) + 
+                  dnorm(x, mean = 1.5, sd = 1)) + 
+  labs(x = "Fake variable x") +
+  theme_minimal() +
+  theme(axis.text.y = element_blank(),
+        axis.title.y = element_blank())
+```
+
+---
+
+## Revisit histograms
+
+```{r}
+set.seed(2024)
+fake_data <- 
+  tibble(fake_x = c(rnorm(100, -1.5), rnorm(100, 1.5))) |>
+  mutate(component = c(rep("left", 100), rep("right", 100)))
+
+fake_data |>
+  ggplot(aes(x = fake_x)) +
+  geom_histogram() +
+  scale_x_continuous(limits = c(-5, 5))
+```
+
+
+---
+
+## What happens as we change the number of bins?
+
+```{r}
+#| code-line-numbers: "3"
+fake_data |>
+  ggplot(aes(x = fake_x)) +
+  geom_histogram(bins = 15) +
+  scale_x_continuous(limits = c(-5, 5))
+```
+
+
+
+---
+
+## What happens as we change the number of bins?
+
+```{r}
+#| code-line-numbers: "3"
+fake_data |>
+  ggplot(aes(x = fake_x)) +
+  geom_histogram(bins = 60) +
+  scale_x_continuous(limits = c(-5, 5))
+```
+
+
+---
+
+## What happens as we change the number of bins?
+
+```{r}
+#| code-line-numbers: "3"
+fake_data |>
+  ggplot(aes(x = fake_x)) +
+  geom_histogram(bins = 5) +
+  scale_x_continuous(limits = c(-5, 5))
+```
+
+---
+
+## What happens as we change the number of bins?
+
+```{r}
+#| code-line-numbers: "3"
+fake_data |>
+  ggplot(aes(x = fake_x)) +
+  geom_histogram(bins = 100) +
+  scale_x_continuous(limits = c(-5, 5))
+```
+
+---
+
+## Variability of graphs - 30 bins
+
+```{r}
+set.seed(2024)
+fake_data <- 
+  tibble(fake_x = c(rnorm(100, -1.5), rnorm(100, 1.5))) |>
+  mutate(component = c(rep("left", 100), rep("right", 100)))
+
+fake_data |>
+  ggplot(aes(x = fake_x)) +
+  geom_histogram() +
+  scale_x_continuous(limits = c(-5, 5))
+```
+
+---
+
+## What happens with a different sample?
+
+```{r}
+set.seed(1979)
+fake_data2 <- 
+  tibble(fake_x = c(rnorm(100, -1.5), rnorm(100, 1.5))) |>
+  mutate(component = c(rep("left", 100), rep("right", 100)))
+
+fake_data2 |>
+  ggplot(aes(x = fake_x)) +
+  geom_histogram() +
+  scale_x_continuous(limits = c(-5, 5))
+```
+
+---
+
+## Variability of graphs - 15 bins
+
+```{r}
+#| echo: false
+library(patchwork)
+hist1 <- fake_data |>
+  ggplot(aes(x = fake_x)) +
+  geom_histogram(bins = 15) +
+  scale_x_continuous(limits = c(-5, 5))
+hist2 <- fake_data2 |>
+  ggplot(aes(x = fake_x)) +
+  geom_histogram(bins = 15) +
+  scale_x_continuous(limits = c(-5, 5))
+hist1 + hist2
+```
+
+
+## Variability of graphs - 5 bins
+
+```{r}
+#| echo: false
+hist1 <- fake_data |>
+  ggplot(aes(x = fake_x)) +
+  geom_histogram(bins = 5) +
+  scale_x_continuous(limits = c(-5, 5))
+hist2 <- fake_data2 |>
+  ggplot(aes(x = fake_x)) +
+  geom_histogram(bins = 5) +
+  scale_x_continuous(limits = c(-5, 5))
+hist1 + hist2
+```
+
+---
+
+## Variability of graphs - 100 bins
+
+```{r}
+#| echo: false
+hist1 <- fake_data |>
+  ggplot(aes(x = fake_x)) +
+  geom_histogram(bins = 100) +
+  scale_x_continuous(limits = c(-5, 5))
+hist2 <- fake_data2 |>
+  ggplot(aes(x = fake_x)) +
+  geom_histogram(bins = 100) +
+  scale_x_continuous(limits = c(-5, 5))
+hist1 + hist2
+```
+
+
+---
+
+## What do visualizations of continuous distributions display?
+
+__Probability that continuous variable $X$ takes a particular value is 0__ 
+
+e.g., $P$ (`flipper_length_mm` $= 200$) $= 0$, _why_?
+
+. . .
+
+Instead we use the __probability density function (PDF)__ to provide a __relative likelihood__ 
+
+For continuous variables we can use the __cumulative distribution function (CDF)__,
+
+$$
+F(x) = P(X \leq x)
+$$
+
+. . .
+
+For $n$ observations we can easily compute the __Empirical CDF (ECDF)__:
+
+
+$$\hat{F}_n(x)  = \frac{\text{# obs. with variable} \leq x}{n} = \frac{1}{n} \sum_{i=1}^{n}1(x_i \leq x)$$
+
+
+- where $1()$ is the indicator function, i.e. `ifelse(x_i <= x, 1, 0)`
+
+---
+
+## Display full distribution with ECDF plot
+
+```{r}
+#| code-line-numbers: "3"
+penguins |>
+  ggplot(aes(x = flipper_length_mm)) + 
+  stat_ecdf() +
+  theme_bw()
+```
+
+
+---
+
+## What about comparing to theoretical distributions?
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Normal_Distribution_PDF.svg/2560px-Normal_Distribution_PDF.svg.png){fig-align="center" width=100%}
+
+:::
+
+::: {.column width="50%"}
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Normal_Distribution_CDF.svg/2560px-Normal_Distribution_CDF.svg.png){fig-align="center" width=100%}
+
+:::
+
+::::
+
+
+---
+
+## One-Sample Kolmogorov-Smirnov Test
+
+- We compare the ECDF $\hat{F}(x)$ to a theoretical distribution's CDF $F(x)$
+
+- The one sample KS test statistic is: $\text{max}_x |\hat{F}(x) - F(x)|$
+
+![](https://upload.wikimedia.org/wikipedia/commons/c/cf/KS_Example.png){fig-align="center" width=80%}
+
+---
+
+## Flipper length example
+
+What if we assume `flipper_length_mm` follows Normal distribution? 
+
++ i.e., `flipper_length_mm` $\sim N(\mu, \sigma^2)$
+
+Need estimates for mean $\mu$ and standard deviation $\sigma$:
+
+```{r}
+flipper_length_mean <- mean(penguins$flipper_length_mm, na.rm = TRUE)
+flipper_length_sd <- sd(penguins$flipper_length_mm, na.rm = TRUE)
+```
+
+. . .
+
+Perform one-sample KS test using [`ks.test()`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/ks.test.html):
+
+```{r}
+ks.test(x = penguins$flipper_length_mm, y = "pnorm",
+        mean = flipper_length_mean, sd = flipper_length_sd)
+```
+
+
+---
+
+## Flipper length example
+
+```{r}
+#| label: kstest-plot
+#| echo: false
+# First create the ECDF function for the variable:
+fl_ecdf <- ecdf(penguins$flipper_length_mm)
+# Compute the absolute value of the differences between the ECDF for the values
+# and the theoretical values with assumed Normal distribution:
+abs_ecdf_diffs <- abs(fl_ecdf(penguins$flipper_length_mm) - pnorm(penguins$flipper_length_mm,
+                                                                  mean = flipper_length_mean, sd = flipper_length_sd))
+# Now find where the maximum difference is:
+max_abs_ecdf_diff_i <- which.max(abs_ecdf_diffs)
+# Get this flipper length value:
+max_fl_diff_value <- penguins$flipper_length_mm[max_abs_ecdf_diff_i]
+# Plot the ECDF with the theoretical Normal and KS test info:
+penguins |>
+  ggplot(aes(x = flipper_length_mm)) +
+  stat_ecdf(color = "darkblue") +
+  # Use stat_function to draw the Normal ECDF
+  stat_function(fun = pnorm, args = list(mean = flipper_length_mean, sd = flipper_length_sd), color = "black", linetype = "dashed") +
+  # Draw KS test line:
+  geom_vline(xintercept = max_fl_diff_value, color = "red") +
+  # Add text with the test results (x and y are manually entered locations)
+  annotate(geom = "text", x = 215, y = .25, label = "KS test stat = 0.12428\np-value = 5.163e-05") + 
+  labs(x = "Flipper length (mm)", y = "Fn(x)") + theme_bw()
+```
+
+
+---
+
+### Visualize distribution comparisons using quantile-quantile (q-q) plots
+
+```{r}
+#| code-line-numbers: "2-4"
+penguins |>
+  ggplot(aes(sample = flipper_length_mm)) +
+  stat_qq() +
+  stat_qq_line()
+```
+
+
+
+---
+
+## What about displaying conditional distributions?
+
+```{r}
+#| code-line-numbers: "3"
+penguins |>
+  ggplot(aes(x = flipper_length_mm)) + 
+  geom_histogram(aes(fill = species))
+```
+
+
+---
+
+## What about displaying conditional distributions?
+
+```{r}
+#| code-line-numbers: "3-4"
+penguins |>
+  ggplot(aes(x = flipper_length_mm)) + 
+  geom_histogram(aes(fill = species),
+                 position = "identity", alpha = 0.3)
+```
+
+
+---
+
+## Normalize histogram frequencies with density values
+
+```{r}
+#| code-line-numbers: "3-4"
+penguins |>
+  ggplot(aes(x = flipper_length_mm)) + 
+  geom_histogram(aes(y = after_stat(density), fill = species),
+                 position = "identity", alpha = 0.3) 
+```
+
+
+---
+
+## Use density curves instead for comparison
+
+```{r}
+#| code-line-numbers: "3"
+penguins |>
+  ggplot(aes(x = flipper_length_mm)) + 
+  geom_density(aes(color = species))
+```
+
+---
+
+## We should NOT fill the density curves
+
+```{r}
+#| code-line-numbers: "3"
+penguins |>
+  ggplot(aes(x = flipper_length_mm)) + 
+  geom_density(aes(fill = species), alpha = .3)
+```
+
+---
+
+## What's the relationship between these two figures?
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(patchwork)
+pens_hist <- penguins |>
+  ggplot(aes(x = flipper_length_mm)) +
+  geom_histogram()
+pens_ecdf <- penguins |>
+  ggplot(aes(x = flipper_length_mm)) + 
+  stat_ecdf() +
+  theme_bw()
+pens_hist + pens_ecdf
+```
+
+---
+
+## Kernel density estimation
+
+__Goal__: estimate the PDF $f(x)$ for all possible values (assuming it is continuous / smooth)
+
+. . .
+
+$$
+\text{Kernel density estimate: } \hat{f}(x) = \frac{1}{n} \sum_{i=1}^n \frac{1}{h} K_h(x - x_i)
+$$
+
+. . .
+
+::: {style="font-size: 75%;"}
+
+- $n =$ sample size, $x =$ new point to estimate $f(x)$ (does NOT have to be in dataset!)
+
+:::
+
+. . .
+
+::: {style="font-size: 75%;"}
+
+- $h =$ __bandwidth__, analogous to histogram bin width, ensures $\hat{f}(x)$ integrates to 1
+
+- $x_i =$ $i$th observation in dataset
+
+:::
+
+. . .
+
+::: {style="font-size: 75%;"}
+
+- $K_h(x - x_i)$ is the __Kernel__ function, creates __weight__ given distance of $i$th observation from new point 
+  - as $|x - x_i| \rightarrow \infty$ then $K_h(x - x_i) \rightarrow 0$, i.e. further apart $i$th row is from $x$, smaller the weight
+  
+  - as __bandwidth__ $h \uparrow$ weights are more evenly spread out (as $h \downarrow$ more concentrated around $x$) 
+
+  - typically use [__Gaussian__ / Normal](https://en.wikipedia.org/wiki/Normal_distribution) kernel: $\propto e^{-(x - x_i)^2 / 2h^2}$
+  
+  - $K_h(x - x_i)$ is large when $x_i$ is close to $x$
+  
+:::
+
+---
+
+## [Wikipedia example](https://en.wikipedia.org/wiki/Kernel_density_estimation)
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Comparison_of_1D_histogram_and_KDE.png/1000px-Comparison_of_1D_histogram_and_KDE.png){fig-align="center" width=100%}
+
+  
+---
+
+## We display __kernel density estimates__ with [`geom_density()`](https://ggplot2.tidyverse.org/reference/geom_density.html)
+
+```{r}
+#| code-line-numbers: "3"
+penguins |>
+  ggplot(aes(x = flipper_length_mm)) + 
+  geom_density() +
+  theme_bw()
+```
+
+---
+
+## Choice of [kernel?](https://en.wikipedia.org/wiki/Kernel_(statistics))
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Kernels.svg/1000px-Kernels.svg.png){fig-align="center" width=70%}
+
+
+---
+
+## What about the bandwidth? 
+
+Use __Gaussian reference rule__ (_rule-of-thumb_) $\approx 1.06 \cdot \sigma \cdot n^{-1/5}$, where $\sigma$ is the observed standard deviation
+
+Modify the bandwidth using the `adjust` argument - __value to multiply default bandwidth by__
+
+```{r}
+#| code-line-numbers: "3"
+penguins |>
+  ggplot(aes(x = flipper_length_mm)) + 
+  geom_density(adjust = 0.5) +
+  theme_bw()
+```
+
+---
+
+## What about the bandwidth? 
+
+Use __Gaussian reference rule__ (_rule-of-thumb_) $\approx 1.06 \cdot \sigma \cdot n^{-1/5}$, where $\sigma$ is the observed standard deviation
+
+Modify the bandwidth using the `adjust` argument - __value to multiply default bandwidth by__
+
+```{r}
+#| code-line-numbers: "3"
+penguins |>
+  ggplot(aes(x = flipper_length_mm)) + 
+  geom_density(adjust = 2) +
+  theme_bw()
+```
+
+
+---
+
+## CAUTION: dealing with bounded data...
+
+
+```{r}
+#| label: bound-dens
+set.seed(101)
+bound_data <- tibble(fake_x = runif(100))
+
+bound_data |>
+  ggplot(aes(x = fake_x)) +
+  geom_density() +
+  geom_rug(alpha = 0.5) + #<<
+  stat_function(data = 
+                  tibble(fake_x = c(0, 1)),
+                fun = dunif, color = "red") +
+  scale_x_continuous(limits = c(-.5, 1.5))
+
+```
+
+
+---
+
+## Visualizing conditional distributions with violin plots
+
+```{r}
+#| code-line-numbers: "2-4"
+penguins |>
+  ggplot(aes(x = species, y = flipper_length_mm)) +
+  geom_violin() +
+  coord_flip()
+```
+
+---
+
+## Visualizing conditional distributions with violin plots
+
+```{r}
+#| code-line-numbers: "4"
+penguins |>
+  ggplot(aes(x = species, y = flipper_length_mm)) +
+  geom_violin() + 
+  geom_boxplot(width = .2) +
+  coord_flip()
+```
+
+
+---
+
+## Visualizing conditional distributions with [`ggridges` package](https://cran.r-project.org/web/packages/ggridges/vignettes/introduction.html)
+
+```{r}
+#| code-line-numbers: "1,3-4"
+library(ggridges)
+penguins |>
+  ggplot(aes(x = flipper_length_mm, y = species)) +
+  geom_density_ridges(rel_min_height = 0.01)
+```
+
+
+---
+
+## Visualizing conditional distributions with [`ggbeeswarm` package](https://github.com/eclarke/ggbeeswarm)
+
+```{r}
+#| code-line-numbers: "1,3-4"
+library(ggbeeswarm)
+penguins |>
+  ggplot(aes(x = flipper_length_mm, y = species)) +
+  geom_beeswarm(cex = 1.5) +
+  theme_bw()
+```
+
+
+---
+
+## Recap and next steps
+
++ Discussed impact of bins on histograms
+
++ Covered ECDFs and connection to KS-tests
+
++ Walked through density estimation
+
++ Discussed ways of visualizing conditional distributions
+
+. . .
+
++ **HW2 is due Wednesday Sept 11th!**
+
++ **HW3 is posted and due next Wednesday Sept 18th**
+
+. . .
+
++ **Next time**: 2D quantitative data
+
++ Recommended reading: 
+
++ [CW Chapter 7 Visualizing distributions: Histograms and density plots](https://clauswilke.com/dataviz/histograms-density-plots.html), [CW Chapter 8 Visualizing distributions: Empirical cumulative distribution functions and q-q plots](https://clauswilke.com/dataviz/ecdf-qq.html)
+
+
+---
+
+## BONUS: Visualizing the KS test statistic
+
+```{r}
+#| echo: true
+#| ref.label: kstest-plot
+#| eval: false
+```
+
