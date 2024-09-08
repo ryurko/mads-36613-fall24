@@ -1,31 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/index.html</loc>
+    <lastmod>2024-09-08T21:34:55.312Z</lastmod>
+  </url>
+  <url>
     <loc>https://ryurko.github.io/mads-36613-fall24/lectures.html</loc>
-    <lastmod>2024-09-03T22:09:53.991Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/01-intro.html</loc>
-    <lastmod>2024-09-03T22:09:53.991Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/02-categorical.html</loc>
-    <lastmod>2024-09-03T22:09:53.991Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/demos.html</loc>
-    <lastmod>2024-09-03T22:09:53.991Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/demos/01-into-tidyverse.html</loc>
-    <lastmod>2024-09-03T22:09:53.991Z</lastmod>
+    <lastmod>2024-09-08T21:34:55.312Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/mads-36613-fall24/lectures/03-2dcategorical-1dquant.html</loc>
-    <lastmod>2024-09-03T22:09:53.991Z</lastmod>
+    <lastmod>2024-09-08T21:34:55.312Z</lastmod>
   </url>
   <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/index.html</loc>
-    <lastmod>2024-09-03T22:09:53.991Z</lastmod>
+    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/02-categorical.html</loc>
+    <lastmod>2024-09-08T21:34:55.312Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/04-quant-distributions.html</loc>
+    <lastmod>2024-09-08T21:34:55.312Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/01-intro.html</loc>
+    <lastmod>2024-09-08T21:34:55.312Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/demos/01-into-tidyverse.html</loc>
+    <lastmod>2024-09-08T21:34:55.312Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/demos.html</loc>
+    <lastmod>2024-09-08T21:34:55.312Z</lastmod>
   </url>
 </urlset>
