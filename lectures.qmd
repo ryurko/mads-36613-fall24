@@ -8,3 +8,4 @@ title: "Lectures"
 | 2         | Aug 28  | Principles and 1D Categorical Data   | [slides](lectures/02-categorical.qmd)  |
 | 3         | Sept 4  | 2D Categorical and 1D Quantitative Data  | [slides](lectures/03-2dcategorical-1dquant.qmd)  |
 | 4         | Sept 9  | Visualizing Quantitative Distributions  | [slides](lectures/04-quant-distributions.qmd)  |
+| 4         | Sept 11 | 2D Quantitative Data  | [slides](lectures/05-2dquant.qmd)  |

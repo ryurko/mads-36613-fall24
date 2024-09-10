@@ -1,0 +1,414 @@
+---
+title: "2D Quantitative Data"
+author: "Prof Ron Yurko"
+footer:  "[mads-36613-fall24](https://ryurko.github.io/mads-36613-fall24/)"
+date: 2024-09-11
+engine: knitr
+format:
+  revealjs:
+    theme: theme.scss
+    chalkboard: true
+    pdf-separate-fragments: true
+    slide-number: c/t
+    smaller: true
+    code-line-numbers: true
+    linestretch: 1.25
+    html-math-method:
+      method: mathjax
+      url: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+---
+
+```{r}
+#| include: false
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center"
+)
+
+library(tidyverse)
+library(palmerpenguins)
+```
+
+## Reminders, previously, and today...
+
++ **HW2 is due TONIGHT!**
+
++ **HW3 is posted and due next Wednesday Sept 18th**
+
+. . .
+
++ Finished up discussion of 1D quantitative visualizations
+
++ Discussed impact of bins on histograms
+
++ Covered ECDFs and connection to KS-tests
+
++ Walked through density estimation and ways of visualizing conditional distributions
+
+. . .
+
+**TODAY:**
+
++ Visualize 2D quantitative data
+
++ Discuss approaches for visualizing conditional and joint distributions
+
+
+---
+
+## 2D quantitative data
+
+- We're working with two variables: $(X, Y) \in \mathbb{R}^2$, i.e., dataset with $n$ rows and 2 columns
+
+. . .
+
+- Goals:
+
+  - describing the relationships between two variables
+  
+  - describing the conditional distribution $Y | X$ via regression analysis
+  
+  - describing the joint distribution $X,Y$ via contours, heatmaps, etc.
+  
+. . .
+
+- Few big picture ideas to keep in mind:
+
+  - scatterplots are by far the most common visual
+  
+  - regression analysis is by far the most popular analysis (you have a whole class on this...)
+  
+  - relationships may vary across other variables, e.g., categorical variables
+  
+---
+
+## Making scatterplots with `geom_point()`
+
+```{r}
+#| code-line-numbers: "2-3"
+penguins |>
+  ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point()
+```
+
+
+---
+
+## Making scatterplots: ALWAYS adjust the `alpha`
+
+```{r}
+#| code-line-numbers: "3"
+penguins |>
+  ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(alpha = 0.5)
+```
+
+---
+
+## Displaying trend lines: linear regression
+
+```{r}
+#| code-line-numbers: "4"
+penguins |>
+  ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm")
+```
+
+
+---
+
+## Assessing assumptions of linear regression
+
+Linear regression assumes $Y_i \overset{iid}{\sim} N(\beta_0 + \beta_1 X_i, \sigma^2)$
+
+- If this is true, then $Y_i - \hat{Y}_i \overset{iid}{\sim} N(0, \sigma^2)$
+
+. . .
+
+Plot residuals against $\hat{Y}_i$, __residuals vs fit__ plot
+
+- Used to assess linearity, any divergence from mean 0
+
+- Used to assess equal variance, i.e., if $\sigma^2$ is homogenous across predictions/fits $\hat{Y}_i$
+
+. . .
+
+More difficult to assess the independence and fixed $X$ assumptions
+
+- Make these assumptions based on subject-matter knowledge
+
+---
+
+## Residual vs fit plots
+
+
+```{r}
+lin_reg <- lm(body_mass_g ~ flipper_length_mm, data = penguins)
+
+tibble(fits = fitted(lin_reg), residuals = residuals(lin_reg)) |>
+  ggplot(aes(x = fits, y = residuals)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red")
+```
+
+
+---
+
+## Residual vs fit plots
+
+```{r}
+#| code-line-numbers: "5"
+tibble(fits = fitted(lin_reg), residuals = residuals(lin_reg)) |>
+  ggplot(aes(x = fits, y = residuals)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  geom_smooth()
+```
+
+---
+
+#### Local linear regression via LOESS (Local Estimated Scatterplot Smoothing)
+
+Still assume Normality, but not linearity: $Y_i \overset{iid}{\sim} N(f(x), \sigma^2)$, where $f(x)$ is some unknown function
+
+. . .
+
+In __local linear regression__, we estimate $f(X_i)$:
+
+$$\text{arg }\underset{\beta_0, \beta_1}{\text{min}} \sum_i^n w_i(x) \cdot \big(Y_i - \beta_0 - \beta_1 X_i \big)^2$$ 
+
+. . .
+
+`geom_smooth()` uses tri-cubic weighting:
+
+$$w_i(d_i) = \begin{cases} (1 - |d_i|^3)^3, \text{ if } i \in \text{neighborhood of  } x, \\
+0 \text{ if } i \notin \text{neighborhood of  } x \end{cases}$$
+
+  - where $d_i$ is the distance between $x$ and $X_i$ scaled to be between 0 and 1
+  
+  - control `span`: decides proportion of observations in neighborhood (default is 0.75)
+  
+---
+
+## Displaying trend lines: LOESS
+
+```{r}
+#| code-line-numbers: "4"
+penguins |>
+  ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(alpha = 0.5) + 
+  geom_smooth()
+```
+
+
+*For $n > 1000$, `mgcv::gam()` is used with `formula = y ~ s(x, bs = "cs")` and `method = "REML"`*
+
+
+---
+
+## Displaying trend lines: LOESS
+
+```{r}
+#| code-line-numbers: "4"
+penguins |>
+  ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(alpha = 0.5) + 
+  geom_smooth(span = .1)
+```
+
+
+---
+
+## Can also update formula within plot
+
+```{r}
+#| code-line-numbers: "4"
+penguins |>
+  ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(alpha = 0.5) + 
+  geom_smooth(method = "lm", formula = y ~ x + I(x^2))
+```
+
+
+*Exercise: check the updated residual plot with this model*
+
+---
+
+## What about focusing on the joint distribution?
+
+```{r, echo = FALSE}
+ohtani_pitches <- read_csv("https://raw.githubusercontent.com/ryurko/DataViz-Class-Data/main/ohtani_pitches_2023.csv")
+```
+
+Example [dataset of pitches](https://raw.githubusercontent.com/ryurko/DataViz-Class-Data/main/ohtani_pitches_2023.csv) thrown by baseball superstar [Shohei Ohtani](https://www.baseball-reference.com/players/o/ohtansh01.shtml)
+
+```{r}
+#| code-line-numbers: "4"
+ohtani_pitches |>
+  ggplot(aes(x = plate_x, y = plate_z)) +
+  geom_point(alpha = 0.2) +
+  coord_fixed() +
+  theme_bw()
+```
+
+
+---
+
+## Going from 1D to 2D density estimation
+
+In 1D: estimate density $f(x)$, assuming that $f(x)$ is _smooth_:
+
+$$
+\hat{f}(x) = \frac{1}{n} \sum_{i=1}^n \frac{1}{h} K_h(x - x_i)
+$$
+
+. . .
+
+In 2D: estimate joint density $f(x_1, x_2)$
+
+$$\hat{f}(x_1, x_2) = \frac{1}{n} \sum_{i=1}^n \frac{1}{h_1h_2} K(\frac{x_1 - x_{i1}}{h_1}) K(\frac{x_2 - x_{i2}}{h_2})$$
+
+. . .
+
+In 1D there was one bandwidth, now __we have two bandwidths__
+
+  - $h_1$: controls smoothness as $X_1$ changes, holding $X_2$ fixed
+  - $h_2$: controls smoothness as $X_2$ changes, holding $X_1$ fixed
+
+Again Gaussian kernels are the most popular...
+
+---
+
+## So how do we display densities for 2D data?
+
+![](https://www.byclb.com/TR/Tutorials/neural_networks/Ch_4_dosyalar/image044.gif){fig-align="center" width=60%}
+
+
+---
+
+## How to read contour plots?
+
+Best known in topology: outlines (contours) denote levels of elevation
+
+![](https://preview.redd.it/2rbe8s8t7re31.jpg?auto=webp&s=eed849b180dd803d394f556432df026c4cd1dae2){fig-align="center" width=60%}
+
+
+---
+
+## Display 2D contour plot
+
+```{r}
+#| code-line-numbers: "4"
+ohtani_pitches |>
+  ggplot(aes(x = plate_x, y = plate_z)) +
+  geom_point(alpha = 0.2) +
+  geom_density2d() +
+  coord_fixed() +
+  theme_bw()
+```
+
+---
+
+## Display 2D contour plot
+
+```{r}
+#| code-line-numbers: "3"
+ohtani_pitches |>
+  ggplot(aes(x = plate_x, y = plate_z)) +
+  geom_density2d() +
+  coord_fixed() +
+  theme_bw()
+```
+
+
+---
+
+## Display 2D contour plot
+
+```{r}
+#| code-line-numbers: "3,5"
+ohtani_pitches |>
+  ggplot(aes(x = plate_x, y = plate_z)) +
+  stat_density2d(aes(fill = after_stat(level)), geom = "polygon") +
+  coord_fixed() +
+  scale_fill_gradient(low = "darkblue", high = "darkorange") +
+  theme_bw()
+```
+
+
+---
+
+## Visualizing grid heat maps
+
+```{r}
+#| code-line-numbers: "3-4,6"
+ohtani_pitches |>
+  ggplot(aes(x = plate_x, y = plate_z)) +
+  stat_density2d(aes(fill = after_stat(density)), 
+                 geom = "tile", contour = FALSE) + 
+  coord_fixed() +
+  scale_fill_gradient(low = "white", high = "red") +
+  theme_bw()
+```
+
+
+---
+
+## Alternative idea: hexagonal binning
+
+
+```{r}
+#| code-line-numbers: "3"
+ohtani_pitches |>
+  ggplot(aes(x = plate_x, y = plate_z)) +
+  geom_hex() +
+  coord_fixed() +
+  scale_fill_gradient(low = "darkblue", high = "darkorange") + 
+  theme_bw()
+```
+
+---
+
+### [LeBron James' shots](https://raw.githubusercontent.com/ryurko/DataViz-Class-Data/main/lebron_shots.csv) from [`hoopR`](https://hoopr.sportsdataverse.org/)
+
+```{r}
+#| code-line-numbers: "5"
+#| message: false
+#| warning: false
+lebron_shots <- read_csv("https://raw.githubusercontent.com/ryurko/DataViz-Class-Data/main/lebron_shots.csv")
+lebron_shots |>
+  ggplot(aes(x = coordinate_x, y = coordinate_y)) +
+  geom_point(alpha = 0.4) +
+  geom_density2d(binwidth = 0.0001) + 
+  coord_fixed() +
+  theme_bw()
+```
+
+---
+
+
+## Recap and next steps
+
++ Use scatterplots to visualize 2D quantitative
+
++ Be careful of over-plotting! May motivate contours or hexagonal bins...
+
++ Discussed approaches for visualizing conditional relationships
+
+. . .
+
++ **HW2 is due TONIGHT!**
+
++ **HW3 is posted due next Wednesday Sept 18th**
+
+. . .
+
++ **Next time**: Into high-dimensional data
+
++ Recommended reading: 
+
++ [CW Chapter 12 Visualizing associations among two or more quantitative variables](https://clauswilke.com/dataviz/visualizing-associations.html)
+
