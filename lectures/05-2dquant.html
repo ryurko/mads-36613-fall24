@@ -525,21 +525,22 @@ Prof Ron Yurko
 
 </div>
 <img data-src="05-2dquant_files/figure-revealjs/unnamed-chunk-6-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
-<section class="slide level2">
-
-<h4 id="local-linear-regression-via-loess-local-estimated-scatterplot-smoothing">Local linear regression via LOESS (Local Estimated Scatterplot Smoothing)</h4>
-<p>Still assume Normality, but not linearity: <span class="math inline">\(Y_i \overset{iid}{\sim} N(f(x), \sigma^2)\)</span>, where <span class="math inline">\(f(x)\)</span> is some unknown function</p>
-<p>. . .</p>
+<section id="local-linear-regression-via-loess" class="slide level2">
+<h2>Local linear regression via LOESS</h2>
+<p><span class="math inline">\(Y_i \overset{iid}{\sim} N(f(x), \sigma^2)\)</span>, where <span class="math inline">\(f(x)\)</span> is some unknown function</p>
+<div class="fragment">
 <p>In <strong>local linear regression</strong>, we estimate <span class="math inline">\(f(X_i)\)</span>:</p>
 <p><span class="math display">\[\text{arg }\underset{\beta_0, \beta_1}{\text{min}} \sum_i^n w_i(x) \cdot \big(Y_i - \beta_0 - \beta_1 X_i \big)^2\]</span></p>
-<p>. . .</p>
+</div>
+<div class="fragment">
 <p><code>geom_smooth()</code> uses tri-cubic weighting:</p>
 <p><span class="math display">\[w_i(d_i) = \begin{cases} (1 - |d_i|^3)^3, \text{ if } i \in \text{neighborhood of  } x, \\
 0 \text{ if } i \notin \text{neighborhood of  } x \end{cases}\]</span></p>
 <ul>
-<li><p>where <span class="math inline">\(d_i\)</span> is the distance between <span class="math inline">\(x\)</span> and <span class="math inline">\(X_i\)</span> scaled to be between 0 and 1</p></li>
-<li><p>control <code>span</code>: decides proportion of observations in neighborhood (default is 0.75)</p></li>
+<li><p><span class="math inline">\(d_i\)</span> is the distance between <span class="math inline">\(x\)</span> and <span class="math inline">\(X_i\)</span> scaled to be between 0 and 1</p></li>
+<li><p><code>span</code>: decides proportion of observations in neighborhood (default is 0.75)</p></li>
 </ul>
+</div>
 </section>
 <section id="displaying-trend-lines-loess" class="slide level2">
 <h2>Displaying trend lines: LOESS</h2>

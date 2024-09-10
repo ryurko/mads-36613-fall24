@@ -293,6 +293,13 @@
     "text": "Residual vs fit plots\n\ntibble(fits = fitted(lin_reg), residuals = residuals(lin_reg)) |&gt;\n  ggplot(aes(x = fits, y = residuals)) +\n  geom_point(alpha = 0.5) +\n  geom_hline(yintercept = 0, linetype = \"dashed\", color = \"red\") +\n  geom_smooth()"
   },
   {
+    "objectID": "lectures/05-2dquant.html#local-linear-regression-via-loess",
+    "href": "lectures/05-2dquant.html#local-linear-regression-via-loess",
+    "title": "2D Quantitative Data",
+    "section": "Local linear regression via LOESS",
+    "text": "Local linear regression via LOESS\n\\(Y_i \\overset{iid}{\\sim} N(f(x), \\sigma^2)\\), where \\(f(x)\\) is some unknown function\n\nIn local linear regression, we estimate \\(f(X_i)\\):\n\\[\\text{arg }\\underset{\\beta_0, \\beta_1}{\\text{min}} \\sum_i^n w_i(x) \\cdot \\big(Y_i - \\beta_0 - \\beta_1 X_i \\big)^2\\]\n\n\ngeom_smooth() uses tri-cubic weighting:\n\\[w_i(d_i) = \\begin{cases} (1 - |d_i|^3)^3, \\text{ if } i \\in \\text{neighborhood of  } x, \\\\\n0 \\text{ if } i \\notin \\text{neighborhood of  } x \\end{cases}\\]\n\n\\(d_i\\) is the distance between \\(x\\) and \\(X_i\\) scaled to be between 0 and 1\nspan: decides proportion of observations in neighborhood (default is 0.75)"
+  },
+  {
     "objectID": "lectures/05-2dquant.html#displaying-trend-lines-loess",
     "href": "lectures/05-2dquant.html#displaying-trend-lines-loess",
     "title": "2D Quantitative Data",
