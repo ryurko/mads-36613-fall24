@@ -170,9 +170,9 @@ tibble(fits = fitted(lin_reg), residuals = residuals(lin_reg)) |>
 
 ---
 
-#### Local linear regression via LOESS (Local Estimated Scatterplot Smoothing)
+## Local linear regression via LOESS
 
-Still assume Normality, but not linearity: $Y_i \overset{iid}{\sim} N(f(x), \sigma^2)$, where $f(x)$ is some unknown function
+$Y_i \overset{iid}{\sim} N(f(x), \sigma^2)$, where $f(x)$ is some unknown function
 
 . . .
 
@@ -187,9 +187,9 @@ $$\text{arg }\underset{\beta_0, \beta_1}{\text{min}} \sum_i^n w_i(x) \cdot \big(
 $$w_i(d_i) = \begin{cases} (1 - |d_i|^3)^3, \text{ if } i \in \text{neighborhood of  } x, \\
 0 \text{ if } i \notin \text{neighborhood of  } x \end{cases}$$
 
-  - where $d_i$ is the distance between $x$ and $X_i$ scaled to be between 0 and 1
+  - $d_i$ is the distance between $x$ and $X_i$ scaled to be between 0 and 1
   
-  - control `span`: decides proportion of observations in neighborhood (default is 0.75)
+  - `span`: decides proportion of observations in neighborhood (default is 0.75)
   
 ---
 
