@@ -11,8 +11,8 @@
   <meta name="generator" content="quarto-1.5.57">
 
   <meta name="author" content="Prof Ron Yurko">
-  <meta name="dcterms.date" content="2024-08-28">
-  <title>Data Visualization 36-613 Fall 24 – Principles and Visualizations for 1D Categorical Data</title>
+  <meta name="dcterms.date" content="2024-09-16">
+  <title>Data Visualization 36-613 Fall 24 – Into High-Dimensional Data</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -394,7 +394,7 @@
     <div class="slides">
 
 <section id="title-slide" class="quarto-title-block center">
-  <h1 class="title">Principles and Visualizations for 1D Categorical Data</h1>
+  <h1 class="title">Into High-Dimensional Data</h1>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
@@ -404,434 +404,270 @@ Prof Ron Yurko
 </div>
 </div>
 
-  <p class="date">2024-08-28</p>
+  <p class="date">2024-09-16</p>
 </section>
 <section id="reminders-previously-and-today" class="slide level2">
 <h2>Reminders, previously, and today…</h2>
 <ul>
-<li><p><strong>HW1 was UPDATED and is due next Wednesday - complete the GenAI Literacy module ON TIME!</strong></p></li>
-<li><p><strong>Complete HW0 by Thursday night!</strong> Confirms you have everything installed and can <a href="https://quarto.org/docs/output-formats/pdf-basics.html">render <code>.qmd</code> files to PDF via <code>tinytex</code></a></p></li>
+<li><p><strong>HW3 is due Wednesday!</strong></p></li>
+<li><p><strong>HW4 is posted and due next Wednesday Sept 25th</strong></p></li>
 </ul>
 <div class="fragment">
 <ul>
-<li><p>Walked through course logistics (<strong>READ THE SYLLABUS</strong>)</p></li>
-<li><p>Introduced the <strong>Grammar of Graphics</strong> and <code>ggplot2</code> basics</p></li>
+<li><p>Walked through visualiziations with scatterplots (always adjust the alpha!)</p></li>
+<li><p>Displayed 2D joint distributions with contours, heatmaps, and hexagonal binning</p></li>
+<li><p>Discussed approaches for visualizing conditional relationships</p></li>
 </ul>
 </div>
 <div class="fragment">
 <p><strong>TODAY:</strong></p>
 <ul>
-<li><p>Discuss data visualization principles and the role of infographics</p></li>
-<li><p>Visualizing categorical data (starting with 1D)</p></li>
+<li><p>Into high-dimensional data</p></li>
+<li><p>What type of structure do we want to capture?</p></li>
 </ul>
 </div>
 </section>
-<section id="in-the-beginning" class="slide level2">
-<h2>In the beginning…</h2>
-<div style="font-size: 80%;">
-<p><strong>Michael Florent van Langren published the first (known) statistical graphic in 1644</strong></p>
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="https://upload.wikimedia.org/wikipedia/commons/6/66/Grados_de_la_Longitud.jpg" class="quarto-figure quarto-figure-center" style="width:80.0%"></p>
-</figure>
-</div>
-<ul>
-<li><p>Plots different estimates of the longitudinal distance between Toledo, Spain and Rome, Italy</p></li>
-<li><p>i.e., visualization of collected data to aid in estimation of parameter</p></li>
-</ul>
-</div>
-<div class="fragment">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDU0fPHI7y9TstYN0hASi7wlDcBUDnNoTS8yNjXehDAZVJ17glqqGBI7Wxt6y_wdgyyw&amp;usqp=CAU.png" class="quarto-figure quarto-figure-center" style="width:80.0%"></p>
-</figure>
-</div>
-</div>
-</section>
-<section id="john-snow-knows-something-about-cholera" class="slide level2">
-<h2><a href="https://www.theguardian.com/news/datablog/2013/mar/15/john-snow-cholera-map">John Snow</a> Knows Something About Cholera</h2>
-
-<img data-src="https://media.nationalgeographic.org/assets/photos/000/276/27636.jpg" class="quarto-figure quarto-figure-center r-stretch" style="width:80.0%"></section>
-<section id="charles-minards-map-of-napoleons-russian-disaster" class="slide level2">
-<h2><a href="https://www.datavis.ca/gallery/minard/minard.pdf">Charles Minard’s</a> Map of Napoleon’s Russian Disaster</h2>
-
-<img data-src="https://datavizblog.files.wordpress.com/2013/05/map-full-size1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:90.0%"></section>
-<section id="florence-nightingales-rose-diagram" class="slide level2">
-<h2><a href="https://www.datavis.ca/gallery/flo.php">Florence Nightingale’s</a> Rose Diagram</h2>
-
-<img data-src="https://daily.jstor.org/wp-content/uploads/2020/08/florence_nightingagle_data_visualization_visionary_1050x700.jpg" class="quarto-figure quarto-figure-center r-stretch" style="width:75.0%"></section>
-<section id="milestones-in-data-visualization-history" class="slide level2">
-<h2><a href="https://friendly.github.io/HistDataVis/">Milestones in Data Visualization History</a></h2>
-
-<img data-src="https://friendly.github.io/HistDataVis/figs-web/07_1-mileyears3.png" class="quarto-figure quarto-figure-center r-stretch" style="width:80.0%"></section>
-<section id="edward-tuftes-principles-of-data-visualization" class="slide level2">
-<h2><a href="https://www.edwardtufte.com/tufte/">Edward Tufte’s</a> Principles of Data Visualization</h2>
-<p><strong><em>Graphics</em></strong>: visually display measured quantities by combining points, lines, coordinate systems, numbers, symbols, words, shading, color</p>
-<p><strong><em>Often our goal is to show data and/or communicate a story</em></strong></p>
-<div class="fragment">
-<ul>
-<li><p>Induce viewer to think about substance, <strong>not graphical methodology</strong></p></li>
-<li><p>Make large, complex datasets more coherent</p></li>
-<li><p>Encourage comparison of different pieces of data</p></li>
-<li><p><strong>Describe, explore, and identify relationships</strong></p></li>
-<li><p><strong>Avoid data distortion and data decoration</strong></p></li>
-<li><p>Use consistent graph design</p></li>
-</ul>
-</div>
-<div class="fragment">
-<p><strong><em>Avoid graphs that lead to misleading conclusions!</em></strong></p>
-</div>
-</section>
-<section id="how-to-fail-this-class" class="slide level2">
-<h2>How to Fail this Class:</h2>
-
-<img data-src="https://socviz.co/assets/ch-01-chartjunk-life-expectancy.png" class="quarto-figure quarto-figure-center r-stretch" style="width:65.0%"></section>
-<section id="what-about-this-spiral" class="slide level2">
-<h2>What about this spiral?</h2>
-
-<img data-src="https://github.com/ryurko/SURE22-examples/blob/main/figures/lecture_examples/nyt_ex.png?raw=true" class="quarto-figure quarto-figure-center r-stretch" style="width:125.0%"><div class="fragment">
-<p><strong><em><a href="https://junkcharts.typepad.com/junk_charts/nyt/">Requires distortion</a></em></strong></p>
-</div>
-</section>
-<section id="infographics-to-communicate-a-story-check-out-flowingdata-for-more-examples" class="slide level2">
-<h2>Infographics to communicate a story (check out <a href="https://flowingdata.com/">FlowingData</a> for more examples)</h2>
-
-<img data-src="https://i0.wp.com/flowingdata.com/wp-content/uploads/2024/08/nba-players-at-olympics-sportradar-scaled-e1723395396398.jpeg?resize=1527%2C2048&amp;quality=89&amp;ssl=1" class="quarto-figure quarto-figure-center r-stretch" style="width:65.0%"></section>
-<section id="alberto-cairo-and-the-art-of-insight" class="slide level2">
-<h2><a href="https://www.albertocairo.com/">Alberto Cairo</a> and the art of insight</h2>
-
-<img data-src="https://academictechnologies.it.miami.edu/_assets/images/images/faculty-engagement/faculty-success-stories/1melgar-big.png" class="quarto-figure quarto-figure-center r-stretch" style="width:65.0%"></section>
-<section id="d-categorical-data" class="slide level2">
-<h2>1D Categorical Data</h2>
-<p>Two different versions of categorical:</p>
-<ol type="1">
-<li><strong>Nominal</strong>: coded with arbitrary numbers, i.e., no real order</li>
-</ol>
-<ul>
-<li>Examples: race, gender, species, text</li>
-</ul>
-<div class="fragment">
-<ol start="2" type="1">
-<li><strong>Ordinal</strong>: levels with a meaningful order</li>
-</ol>
-<ul>
-<li>Examples: education level, grades, ranks</li>
-</ul>
-</div>
-<div class="fragment">
-<p><strong>NOTE</strong>: <code>R</code> and <code>ggplot</code> considers a categorical variable to be <code>factor</code></p>
-<ul>
-<li><p><code>R</code> will always treat categorical variables as ordinal! Defaults to alphabetical…</p></li>
-<li><p>We will need to manually define the <code>factor</code> levels</p></li>
-</ul>
-</div>
-</section>
-<section id="d-categorical-data-structure" class="slide level2">
-<h2>1D categorical data structure</h2>
-<ul>
-<li><p>Observations are collected into a vector <span class="math inline">\((x_1, \dots, x_n)\)</span>, where <span class="math inline">\(n\)</span> is number of observations</p></li>
-<li><p>Each observed value <span class="math inline">\(x_i\)</span> can only belong to one category level <span class="math inline">\(\{ C_1, C_2, \dots \}\)</span></p></li>
-</ul>
-<div class="fragment">
-<p>Look at <code>penguins</code> data from the <a href="https://allisonhorst.github.io/palmerpenguins/"><code>palmerpenguins</code></a> package, focusing on <code>species</code>:</p>
+<section id="back-to-the-penguins" class="slide level2">
+<h2>Back to the penguins…</h2>
+<p>Pretend I give you this <code>penguins</code> dataset and I ask you to make a plot <strong>for every pairwise comparison</strong>…</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a><span class="fu">library</span>(palmerpenguins)</span>
-<span id="cb1-2"><a></a><span class="fu">head</span>(penguins<span class="sc">$</span>species)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a>penguins <span class="sc">|&gt;</span> <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] Adelie Adelie Adelie Adelie Adelie Adelie
-Levels: Adelie Chinstrap Gentoo</code></pre>
+<pre><code># A tibble: 3 × 8
+  species island    bill_length_mm bill_depth_mm flipper_length_mm body_mass_g
+  &lt;fct&gt;   &lt;fct&gt;              &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;       &lt;int&gt;
+1 Adelie  Torgersen           39.1          18.7               181        3750
+2 Adelie  Torgersen           39.5          17.4               186        3800
+3 Adelie  Torgersen           40.3          18                 195        3250
+# ℹ 2 more variables: sex &lt;fct&gt;, year &lt;int&gt;</code></pre>
 </div>
-</div>
-<p><strong><em>How could we summarize these data? What information would you report?</em></strong></p>
 </div>
 <div class="fragment">
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a><span class="fu">table</span>(penguins<span class="sc">$</span>species)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-   Adelie Chinstrap    Gentoo 
-      152        68       124 </code></pre>
-</div>
-</div>
-</div>
-</section>
-<section id="area-plots" class="slide level2">
-<h2>Area plots</h2>
-
-<img data-src="https://clauswilke.com/dataviz/directory_of_visualizations_files/figure-html/proportions-1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:65.0%"><ul>
-<li><p>Each area corresponds to one categorical level</p></li>
-<li><p>Area is proportional to counts/frequencies/percentages</p></li>
-<li><p>Differences between areas correspond to differences between counts/frequencies/percentages</p></li>
-</ul>
-</section>
-<section id="bar-charts" class="slide level2">
-<h2>Bar charts</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb5" data-code-line-numbers="3-4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb5-2"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb5-3"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species)) <span class="sc">+</span></span>
-<span id="cb5-4"><a></a>  <span class="fu">geom_bar</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-4-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
-<section id="behind-the-scenes-statistical-summaries" class="slide level2">
-<h2>Behind the scenes: statistical summaries</h2>
-
-<img data-src="https://d33wubrfki0l68.cloudfront.net/70a3b18a1128c785d8676a48c005ee9b6a23cc00/7283c/images/visualization-stat-bar.png" class="quarto-figure quarto-figure-center r-stretch" style="width:65.0%"><p>From <a href="https://r4ds.had.co.nz/data-visualisation.html">Chapter 3 of R for Data Science</a></p>
-</section>
-<section id="spine-charts---height-version" class="slide level2">
-<h2>Spine charts - height version</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb6" data-code-line-numbers="2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb6-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> species, <span class="at">x =</span> <span class="st">""</span>)) <span class="sc">+</span></span>
-<span id="cb6-3"><a></a>  <span class="fu">geom_bar</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-5-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
-<section id="spine-charts---width-version" class="slide level2">
-<h2>Spine charts - width version</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7" data-code-line-numbers="4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb7-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> species, <span class="at">x =</span> <span class="st">""</span>)) <span class="sc">+</span></span>
-<span id="cb7-3"><a></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span></span>
-<span id="cb7-4"><a></a>  <span class="fu">coord_flip</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-6-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
-<section id="what-does-a-bar-chart-show" class="slide level2">
-<h2>What does a bar chart show?</h2>
-<p><strong>Marginal Distribution</strong></p>
+<p>We can create a <strong>pairs plot</strong> to see <strong>all</strong> pairwise relationships <strong>in one plot</strong></p>
+<p>Pairs plot can include the various kinds of pairwise plots we’ve seen:</p>
 <ul>
-<li><p>Assume categorical variable <span class="math inline">\(X\)</span> has <span class="math inline">\(K\)</span> categories: <span class="math inline">\(C_1, \dots, C_K\)</span></p></li>
-<li><p><strong>True</strong> marginal distribution of <span class="math inline">\(X\)</span>:</p></li>
+<li><p>Two quantitative variables: scatterplot</p></li>
+<li><p>One categorical, one quantitative: side-by-side violins, stacked histograms, overlaid densities</p></li>
+<li><p>Two categorical: stacked bars, side-by-side bars, mosaic plots</p></li>
 </ul>
-<p><span class="math display">\[
-P(X = C_j) = p_j,\ j \in \{ 1, \dots, K \}
-\]</span></p>
-<div class="fragment">
-<p><strong>We have access to the Empirical Marginal Distribution</strong></p>
-<ul>
-<li>Observed distribution of <span class="math inline">\(X\)</span>, our best estimate (MLE) of the marginal distribution of <span class="math inline">\(X\)</span>: <span class="math inline">\(\hat{p}_1\)</span>, <span class="math inline">\(\hat{p}_2\)</span>, <span class="math inline">\(\dots\)</span>, <span class="math inline">\(\hat{p}_K\)</span></li>
-</ul>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a><span class="fu">table</span>(penguins<span class="sc">$</span>species) <span class="sc">/</span> <span class="fu">nrow</span>(penguins)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-   Adelie Chinstrap    Gentoo 
-0.4418605 0.1976744 0.3604651 </code></pre>
-</div>
-</div>
 </div>
 </section>
-<section id="bar-charts-with-proportions" class="slide level2">
-<h2>Bar charts with proportions</h2>
-<ul>
-<li><p><a href="https://ggplot2.tidyverse.org/reference/aes_eval.html"><code>after_stat()</code></a> indicates the aesthetic mapping is performed after statistical transformation</p></li>
-<li><p>Use <code>after_stat(count)</code> to access the <code>stat_count()</code> called by <code>geom_bar()</code></p></li>
-</ul>
+<section id="create-pairs-plots-with-ggally" class="slide level2">
+<h2>Create pairs plots with <a href="https://ggobi.github.io/ggally/index.html"><code>GGally</code></a></h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb10" data-code-line-numbers="3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb10-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species)) <span class="sc">+</span></span>
-<span id="cb10-3"><a></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">after_stat</span>(count) <span class="sc">/</span> <span class="fu">sum</span>(<span class="fu">after_stat</span>(count)))) <span class="sc">+</span> </span>
-<span id="cb10-4"><a></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"Proportion"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a><span class="fu">library</span>(GGally)</span>
+<span id="cb3-2"><a></a>penguins <span class="sc">|&gt;</span> <span class="fu">ggpairs</span>(<span class="at">columns =</span> <span class="dv">3</span><span class="sc">:</span><span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-8-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
-<section id="compute-and-display-the-proportions-directly" class="slide level2">
-<h2>Compute and display the proportions directly</h2>
-<ul>
-<li><p>Use <code>group_by()</code>, <code>summarize()</code>, and <code>mutate()</code> in a pipeline to compute then display the proportions directly</p></li>
-<li><p>Need to indicate we are displaying the <code>y</code> axis as given, i.e., the identity function</p></li>
-</ul>
+<img data-src="06-into-highdim_files/figure-revealjs/unnamed-chunk-3-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="create-pairs-plots-with-ggally-1" class="slide level2">
+<h2>Create pairs plots with <a href="https://ggobi.github.io/ggally/index.html"><code>GGally</code></a></h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb11" data-code-line-numbers="2-5,7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb11-2"><a></a>  <span class="fu">group_by</span>(species) <span class="sc">|&gt;</span> </span>
-<span id="cb11-3"><a></a>  <span class="fu">summarize</span>(<span class="at">count =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb11-4"><a></a>  <span class="fu">mutate</span>(<span class="at">total =</span> <span class="fu">sum</span>(count), </span>
-<span id="cb11-5"><a></a>         <span class="at">prop =</span> count <span class="sc">/</span> total) <span class="sc">|&gt;</span> </span>
-<span id="cb11-6"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species)) <span class="sc">+</span></span>
-<span id="cb11-7"><a></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> prop), <span class="at">stat =</span> <span class="st">"identity"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4" data-code-line-numbers="2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a>penguins <span class="sc">|&gt;</span> <span class="fu">ggpairs</span>(<span class="at">columns =</span> <span class="dv">3</span><span class="sc">:</span><span class="dv">6</span>,</span>
+<span id="cb4-2"><a></a>                    <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="06-into-highdim_files/figure-revealjs/unnamed-chunk-4-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="flexibility-in-customization" class="slide level2">
+<h2>Flexibility in customization</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a>penguins <span class="sc">|&gt;</span> </span>
+<span id="cb5-2"><a></a>  <span class="fu">ggpairs</span>(<span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"bill_length_mm"</span>, <span class="st">"body_mass_g"</span>, <span class="st">"island"</span>),</span>
+<span id="cb5-3"><a></a>          <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>, <span class="at">color =</span> species), </span>
+<span id="cb5-4"><a></a>          <span class="at">lower =</span> <span class="fu">list</span>(</span>
+<span id="cb5-5"><a></a>            <span class="at">continuous =</span> <span class="st">"smooth_lm"</span>, </span>
+<span id="cb5-6"><a></a>            <span class="at">combo =</span> <span class="st">"facetdensitystrip"</span></span>
+<span id="cb5-7"><a></a>          ),</span>
+<span id="cb5-8"><a></a>          <span class="at">upper =</span> <span class="fu">list</span>(</span>
+<span id="cb5-9"><a></a>            <span class="at">continuous =</span> <span class="st">"cor"</span>,</span>
+<span id="cb5-10"><a></a>            <span class="at">combo =</span> <span class="st">"facethist"</span></span>
+<span id="cb5-11"><a></a>          )</span>
+<span id="cb5-12"><a></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 </section>
-<section id="compute-and-display-the-proportions-directly-output" class="slide level2 output-location-slide"><h2>Compute and display the proportions directly</h2><div class="cell output-location-slide" data-layout-align="center">
+<section id="flexibility-in-customization-output" class="slide level2 output-location-slide"><h2>Flexibility in customization</h2><div class="cell output-location-slide" data-layout-align="center">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-9-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
+<p><img data-src="06-into-highdim_files/figure-revealjs/unnamed-chunk-5-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
 </figure>
 </div>
 </div>
-</div></section><section id="what-about-uncertainty" class="slide level2">
-<h2>What about uncertainty?</h2>
-<ul>
-<li>Quantify uncertainty for our estimate <span class="math inline">\(\hat{p}_j = \frac{n_j}{n}\)</span> with the <strong>standard error</strong>:</li>
-</ul>
-<p><span class="math display">\[
-SE(\hat{p}_j) = \sqrt{\frac{\hat{p}_j(1 - \hat{p}_j)}{n}}
-\]</span></p>
-<div class="fragment">
-<ul>
-<li><p>Compute <span class="math inline">\(\alpha\)</span>-level <strong>confidence interval</strong> (CI) as <span class="math inline">\(\hat{p}_j \pm z_{1 - \alpha / 2} \cdot SE(\hat{p}_j)\)</span></p></li>
-<li><p>Good rule-of-thumb: construct 95% CI using <span class="math inline">\(\hat{p}_j \pm 2 \cdot SE(\hat{p}_j)\)</span></p></li>
-<li><p>Approximation justified by CLT, so CI could include values outside of [0,1]</p></li>
-</ul>
-</div>
-</section>
-<section id="add-standard-errors-to-bars" class="slide level2">
-<h2>Add standard errors to bars</h2>
-<ul>
-<li><p>Need to remember each CI is for each <span class="math inline">\(\hat{p}_j\)</span> marginally, <strong>not</strong> jointly</p></li>
-<li><p>Have to be careful with <strong>multiple testing</strong></p></li>
-</ul>
+</div></section><section id="see-demo-03-for-more" class="slide level2">
+<h2>See Demo 03 for more!</h2>
+
+<img data-src="06-into-highdim_files/figure-revealjs/unnamed-chunk-6-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="what-about-high-dimensional-data" class="slide level2">
+<h2>What about high-dimensional data?</h2>
+<p>Consider this <a href="https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-12-21/readme.md">dataset</a> containing nutritional information about Starbucks drinks:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb12" data-code-line-numbers="6-8,11-12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb12-2"><a></a>  <span class="fu">group_by</span>(species) <span class="sc">|&gt;</span> </span>
-<span id="cb12-3"><a></a>  <span class="fu">summarize</span>(<span class="at">count =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb12-4"><a></a>  <span class="fu">mutate</span>(<span class="at">total =</span> <span class="fu">sum</span>(count), </span>
-<span id="cb12-5"><a></a>         <span class="at">prop =</span> count <span class="sc">/</span> total,</span>
-<span id="cb12-6"><a></a>         <span class="at">se =</span> <span class="fu">sqrt</span>(prop <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> prop) <span class="sc">/</span> total), </span>
-<span id="cb12-7"><a></a>         <span class="at">lower =</span> prop <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> se, </span>
-<span id="cb12-8"><a></a>         <span class="at">upper =</span> prop <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> se) <span class="sc">|&gt;</span> </span>
-<span id="cb12-9"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species)) <span class="sc">+</span></span>
-<span id="cb12-10"><a></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> prop), <span class="at">stat =</span> <span class="st">"identity"</span>) <span class="sc">+</span></span>
-<span id="cb12-11"><a></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> lower, <span class="at">ymax =</span> upper), </span>
-<span id="cb12-12"><a></a>                <span class="at">color =</span> <span class="st">"red"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>starbucks <span class="ot">&lt;-</span> </span>
+<span id="cb6-2"><a></a>  <span class="fu">read_csv</span>(<span class="st">"https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-12-21/starbucks.csv"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a></a>  <span class="co"># Convert columns to numeric that were saved as character</span></span>
+<span id="cb6-4"><a></a>  <span class="fu">mutate</span>(<span class="at">trans_fat_g =</span> <span class="fu">as.numeric</span>(trans_fat_g), <span class="at">fiber_g =</span> <span class="fu">as.numeric</span>(fiber_g))</span>
+<span id="cb6-5"><a></a>starbucks <span class="sc">|&gt;</span> <span class="fu">slice</span>(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 15
+  product_name              size   milk  whip serv_size_m_l calories total_fat_g
+  &lt;chr&gt;                     &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;         &lt;dbl&gt;    &lt;dbl&gt;       &lt;dbl&gt;
+1 brewed coffee - dark roa… short     0     0           236        3         0.1
+# ℹ 8 more variables: saturated_fat_g &lt;dbl&gt;, trans_fat_g &lt;dbl&gt;,
+#   cholesterol_mg &lt;dbl&gt;, sodium_mg &lt;dbl&gt;, total_carbs_g &lt;dbl&gt;, fiber_g &lt;dbl&gt;,
+#   sugar_g &lt;dbl&gt;, caffeine_mg &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<p><strong>How do we visualize this dataset? </strong></p>
+<ul>
+<li>Tedious task: make a series of pairs plots (one giant pairs plot would overwhelming)</li>
+</ul>
+</section>
+<section id="what-about-high-dimensional-data-1" class="slide level2">
+<h2>What about high-dimensional data?</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a>starbucks <span class="ot">&lt;-</span> </span>
+<span id="cb8-2"><a></a>  <span class="fu">read_csv</span>(<span class="st">"https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-12-21/starbucks.csv"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-3"><a></a>  <span class="co"># Convert columns to numeric that were saved as character</span></span>
+<span id="cb8-4"><a></a>  <span class="fu">mutate</span>(<span class="at">trans_fat_g =</span> <span class="fu">as.numeric</span>(trans_fat_g), <span class="at">fiber_g =</span> <span class="fu">as.numeric</span>(fiber_g))</span>
+<span id="cb8-5"><a></a>starbucks <span class="sc">|&gt;</span> <span class="fu">slice</span>(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 15
+  product_name              size   milk  whip serv_size_m_l calories total_fat_g
+  &lt;chr&gt;                     &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;         &lt;dbl&gt;    &lt;dbl&gt;       &lt;dbl&gt;
+1 brewed coffee - dark roa… short     0     0           236        3         0.1
+# ℹ 8 more variables: saturated_fat_g &lt;dbl&gt;, trans_fat_g &lt;dbl&gt;,
+#   cholesterol_mg &lt;dbl&gt;, sodium_mg &lt;dbl&gt;, total_carbs_g &lt;dbl&gt;, fiber_g &lt;dbl&gt;,
+#   sugar_g &lt;dbl&gt;, caffeine_mg &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<p><strong>Goals to keep in mind with visualizing high-dimensional data:</strong></p>
+<ul>
+<li><p><strong>Visualize structure among observations</strong> based on distances and projections (next lecture)</p></li>
+<li><p><strong>Visualize structure among variables</strong> using correlation as “distance”</p></li>
+</ul>
+</section>
+<section id="correlogram-to-visualize-correlation-matrix" class="slide level2">
+<h2>Correlogram to visualize correlation matrix</h2>
+<p>Use the <a href="https://rpkgs.datanovia.com/ggcorrplot/"><code>ggcorrplot</code></a> package:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a></a>starbucks_quant_cor <span class="ot">&lt;-</span> <span class="fu">cor</span>(dplyr<span class="sc">::</span><span class="fu">select</span>(starbucks, serv_size_m_l<span class="sc">:</span>caffeine_mg))</span>
+<span id="cb10-2"><a></a></span>
+<span id="cb10-3"><a></a><span class="fu">library</span>(ggcorrplot)</span>
+<span id="cb10-4"><a></a><span class="fu">ggcorrplot</span>(starbucks_quant_cor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="06-into-highdim_files/figure-revealjs/unnamed-chunk-9-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="options-to-customize-correlogram" class="slide level2">
+<h2>Options to customize correlogram</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb11" data-code-line-numbers="2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a></a><span class="fu">ggcorrplot</span>(starbucks_quant_cor,</span>
+<span id="cb11-2"><a></a>           <span class="at">type =</span> <span class="st">"lower"</span>, <span class="at">method =</span> <span class="st">"circle"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="06-into-highdim_files/figure-revealjs/unnamed-chunk-10-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="reorder-variables-based-on-correlation" class="slide level2">
+<h2>Reorder variables based on correlation</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb12" data-code-line-numbers="3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a></a><span class="fu">ggcorrplot</span>(starbucks_quant_cor,</span>
+<span id="cb12-2"><a></a>           <span class="at">type =</span> <span class="st">"lower"</span>, <span class="at">method =</span> <span class="st">"circle"</span>,</span>
+<span id="cb12-3"><a></a>           <span class="at">hc.order =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="06-into-highdim_files/figure-revealjs/unnamed-chunk-11-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="heatmap-displays-of-observations" class="slide level2">
+<h2>Heatmap displays of observations</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a></a><span class="fu">heatmap</span>(<span class="fu">as.matrix</span>(dplyr<span class="sc">::</span><span class="fu">select</span>(starbucks, serv_size_m_l<span class="sc">:</span>caffeine_mg)),</span>
+<span id="cb13-2"><a></a>        <span class="at">scale =</span> <span class="st">"column"</span>, </span>
+<span id="cb13-3"><a></a>        <span class="at">labRow =</span> starbucks<span class="sc">$</span>product_name,</span>
+<span id="cb13-4"><a></a>        <span class="at">cexRow =</span> .<span class="dv">5</span>, <span class="at">cexCol =</span> .<span class="dv">75</span>,</span>
+<span id="cb13-5"><a></a>        <span class="at">Rowv =</span> <span class="cn">NA</span>, <span class="at">Colv =</span> <span class="cn">NA</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="06-into-highdim_files/figure-revealjs/unnamed-chunk-12-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="manual-version-of-heatmaps" class="slide level2">
+<h2>Manual version of heatmaps</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a></a>starbucks <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(product_name, serv_size_m_l<span class="sc">:</span>caffeine_mg) <span class="sc">|&gt;</span></span>
+<span id="cb14-3"><a></a>  <span class="fu">pivot_longer</span>(serv_size_m_l<span class="sc">:</span>caffeine_mg,</span>
+<span id="cb14-4"><a></a>               <span class="at">names_to =</span> <span class="st">"variable"</span>,</span>
+<span id="cb14-5"><a></a>               <span class="at">values_to =</span> <span class="st">"raw_value"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-6"><a></a>  <span class="fu">group_by</span>(variable) <span class="sc">|&gt;</span></span>
+<span id="cb14-7"><a></a>  <span class="fu">mutate</span>(<span class="at">std_value =</span> (raw_value <span class="sc">-</span> <span class="fu">mean</span>(raw_value)) <span class="sc">/</span> <span class="fu">sd</span>(raw_value)) <span class="sc">|&gt;</span></span>
+<span id="cb14-8"><a></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
+<span id="cb14-9"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">y =</span> variable, <span class="at">x =</span> product_name, <span class="at">fill =</span> std_value)) <span class="sc">+</span></span>
+<span id="cb14-10"><a></a>  <span class="fu">geom_tile</span>() <span class="sc">+</span></span>
+<span id="cb14-11"><a></a>  <span class="fu">theme_light</span>() <span class="sc">+</span></span>
+<span id="cb14-12"><a></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">1</span>, <span class="at">angle =</span> <span class="dv">45</span>),</span>
+<span id="cb14-13"><a></a>        <span class="at">legend.position =</span> <span class="st">"bottom"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 </section>
-<section id="add-standard-errors-to-bars-output" class="slide level2 output-location-slide"><h2>Add standard errors to bars</h2><div class="cell output-location-slide" data-layout-align="center">
+<section id="manual-version-of-heatmaps-output" class="slide level2 output-location-slide"><h2>Manual version of heatmaps</h2><div class="cell output-location-slide" data-layout-align="center">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-10-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
+<p><img data-src="06-into-highdim_files/figure-revealjs/unnamed-chunk-13-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
 </figure>
 </div>
 </div>
-</div></section><section id="why-does-this-matter" class="slide level2">
-<h2>Why does this matter?</h2>
-<div>
-
-</div>
-<div class="cell quarto-layout-panel" data-layout-ncol="2" data-layout-align="center">
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-11-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
-</figure>
-</div>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-11-2.png" class="quarto-figure quarto-figure-center" width="960"></p>
-</figure>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="graphs-can-appear-the-same-with-very-different-statistical-conclusions---mainly-due-to-sample-size" class="slide level2">
-<h2>Graphs can appear the same with very different statistical conclusions - mainly due to sample size</h2>
-<div>
-
-</div>
-<div class="cell quarto-layout-panel" data-layout-ncol="2" data-layout-align="center">
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-12-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
-</figure>
-</div>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-12-2.png" class="quarto-figure quarto-figure-center" width="960"></p>
-</figure>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="useful-to-order-categories-by-frequency-with-forcats" class="slide level2">
-<h2>Useful to order categories by frequency with <a href="https://forcats.tidyverse.org/"><code>forcats</code></a></h2>
+</div></section><section id="manual-version-of-heatmaps-1" class="slide level2">
+<h2>Manual version of heatmaps</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb13" data-code-line-numbers="9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb13-2"><a></a>  <span class="fu">group_by</span>(species) <span class="sc">|&gt;</span> </span>
-<span id="cb13-3"><a></a>  <span class="fu">summarize</span>(<span class="at">count =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb13-4"><a></a>  <span class="fu">mutate</span>(<span class="at">total =</span> <span class="fu">sum</span>(count), </span>
-<span id="cb13-5"><a></a>         <span class="at">prop =</span> count <span class="sc">/</span> total,</span>
-<span id="cb13-6"><a></a>         <span class="at">se =</span> <span class="fu">sqrt</span>(prop <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> prop) <span class="sc">/</span> total), </span>
-<span id="cb13-7"><a></a>         <span class="at">lower =</span> prop <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> se, </span>
-<span id="cb13-8"><a></a>         <span class="at">upper =</span> prop <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> se,</span>
-<span id="cb13-9"><a></a>         <span class="at">species =</span> <span class="fu">fct_reorder</span>(species, prop)) <span class="sc">|&gt;</span></span>
-<span id="cb13-10"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species)) <span class="sc">+</span></span>
-<span id="cb13-11"><a></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> prop), <span class="at">stat =</span> <span class="st">"identity"</span>) <span class="sc">+</span></span>
-<span id="cb13-12"><a></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> lower, <span class="at">ymax =</span> upper), </span>
-<span id="cb13-13"><a></a>                <span class="at">color =</span> <span class="st">"red"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15" data-code-line-numbers="3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a></a>starbucks <span class="sc">|&gt;</span></span>
+<span id="cb15-2"><a></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(product_name, serv_size_m_l<span class="sc">:</span>caffeine_mg) <span class="sc">|&gt;</span></span>
+<span id="cb15-3"><a></a>  <span class="fu">mutate</span>(<span class="at">product_name =</span> <span class="fu">fct_reorder</span>(product_name, calories)) <span class="sc">|&gt;</span></span>
+<span id="cb15-4"><a></a>  <span class="fu">pivot_longer</span>(serv_size_m_l<span class="sc">:</span>caffeine_mg,</span>
+<span id="cb15-5"><a></a>               <span class="at">names_to =</span> <span class="st">"variable"</span>,</span>
+<span id="cb15-6"><a></a>               <span class="at">values_to =</span> <span class="st">"raw_value"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb15-7"><a></a>  <span class="fu">group_by</span>(variable) <span class="sc">|&gt;</span></span>
+<span id="cb15-8"><a></a>  <span class="fu">mutate</span>(<span class="at">std_value =</span> (raw_value <span class="sc">-</span> <span class="fu">mean</span>(raw_value)) <span class="sc">/</span> <span class="fu">sd</span>(raw_value)) <span class="sc">|&gt;</span></span>
+<span id="cb15-9"><a></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
+<span id="cb15-10"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">y =</span> variable, <span class="at">x =</span> product_name, <span class="at">fill =</span> std_value)) <span class="sc">+</span></span>
+<span id="cb15-11"><a></a>  <span class="fu">geom_tile</span>() <span class="sc">+</span></span>
+<span id="cb15-12"><a></a>  <span class="fu">scale_fill_gradient</span>(<span class="at">low =</span> <span class="st">"darkblue"</span>, <span class="at">high =</span> <span class="st">"darkorange"</span>) <span class="sc">+</span></span>
+<span id="cb15-13"><a></a>  <span class="fu">theme_light</span>() <span class="sc">+</span></span>
+<span id="cb15-14"><a></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">1</span>, <span class="at">angle =</span> <span class="dv">45</span>),</span>
+<span id="cb15-15"><a></a>        <span class="at">legend.position =</span> <span class="st">"bottom"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 </section>
-<section id="useful-to-order-categories-by-frequency-with-forcats-output" class="slide level2 output-location-slide"><h2>Useful to order categories by frequency with <a href="https://forcats.tidyverse.org/"><code>forcats</code></a></h2><div class="cell output-location-slide" data-layout-align="center">
+<section id="manual-version-of-heatmaps-1-output" class="slide level2 output-location-slide"><h2>Manual version of heatmaps</h2><div class="cell output-location-slide" data-layout-align="center">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-13-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
+<p><img data-src="06-into-highdim_files/figure-revealjs/unnamed-chunk-14-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
 </figure>
 </div>
 </div>
-</div></section><section id="so-you-want-to-make-pie-charts" class="slide level2">
-<h2>So you want to make pie charts…</h2>
+</div></section><section id="parallel-coordinates-plot-with-ggparcoord" class="slide level2">
+<h2>Parallel coordinates plot with <a href="https://ggobi.github.io/ggally/reference/ggparcoord.html"><code>ggparcoord</code></a></h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb14" data-code-line-numbers="2-5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a></a>penguins <span class="sc">|&gt;</span> </span>
-<span id="cb14-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> species, <span class="at">x =</span> <span class="st">""</span>)) <span class="sc">+</span> </span>
-<span id="cb14-3"><a></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">after_stat</span>(count))) <span class="sc">+</span></span>
-<span id="cb14-4"><a></a>  <span class="fu">coord_polar</span>(<span class="at">theta =</span> <span class="st">"y"</span>) <span class="sc">+</span></span>
-<span id="cb14-5"><a></a>  <span class="fu">theme_void</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a></a>starbucks <span class="sc">|&gt;</span></span>
+<span id="cb16-2"><a></a>  <span class="fu">ggparcoord</span>(<span class="at">columns =</span> <span class="dv">5</span><span class="sc">:</span><span class="dv">15</span>, <span class="at">alphaLines =</span> .<span class="dv">1</span>) <span class="sc">+</span> <span class="co">#&lt;&lt;</span></span>
+<span id="cb16-3"><a></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">90</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-14-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
-<section id="friends-dont-let-friends-make-pie-charts" class="slide level2">
-<h2><a href="https://github.com/cxli233/FriendsDontLetFriends">Friends Don’t Let Friends Make Pie Charts</a></h2>
-
-<img data-src="https://raw.githubusercontent.com/cxli233/FriendsDontLetFriends/9267fcbb0e5db5a95c2cf624db3c53b50d6ee2fb/Results/dont_pie_chart.svg" class="quarto-figure quarto-figure-center r-stretch" style="width:80.0%"></section>
-<section id="waffle-charts-are-cooler-anyway" class="slide level2">
-<h2><a href="https://github.com/hrbrmstr/waffle">Waffle charts</a> are cooler anyway…</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a></a><span class="fu">library</span>(waffle)</span>
-<span id="cb15-2"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb15-3"><a></a>  <span class="fu">group_by</span>(species) <span class="sc">|&gt;</span> </span>
-<span id="cb15-4"><a></a>  <span class="fu">summarize</span>(<span class="at">count =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb15-5"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> species, <span class="at">values =</span> count)) <span class="sc">+</span></span>
-<span id="cb15-6"><a></a>  <span class="fu">geom_waffle</span>(<span class="at">n_rows =</span> <span class="dv">20</span>, <span class="at">color =</span> <span class="st">"white"</span>, <span class="at">flip =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
-<span id="cb15-7"><a></a>  <span class="fu">coord_equal</span>() <span class="sc">+</span></span>
-<span id="cb15-8"><a></a>  <span class="fu">theme_void</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-15-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<img data-src="06-into-highdim_files/figure-revealjs/unnamed-chunk-15-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
 <section id="recap-and-next-steps" class="slide level2">
 <h2>Recap and next steps</h2>
 <ul>
-<li><p>Discussed basic principles of data visualization and walked through variety of examples</p></li>
-<li><p>Visualize categorical data with bars!</p></li>
-<li><p>Display uncertainty with standard errors</p></li>
+<li><p>Discussed creating pairs plots for initial inspection of several variables</p></li>
+<li><p>Began thinking about ways to displays dataset structure via correlations</p></li>
+<li><p>Used heatmaps and parallel coordinates plot to capture observation and variable structure</p></li>
 </ul>
 <div class="fragment">
 <ul>
-<li><p><strong>HW1 is due next Wednesday - complete GenAI module ON TIME!</strong></p></li>
-<li><p><strong>Complete HW0 by Thursday night!</strong> Confirms you have everything installed and can <a href="https://quarto.org/docs/output-formats/pdf-basics.html">render <code>.qmd</code> files to PDF via <code>tinytex</code></a></p></li>
+<li><p><strong>HW3 is due Wednesday!</strong></p></li>
+<li><p><strong>HW4 is posted due next Wednesday Sept 25th</strong></p></li>
 </ul>
 </div>
 <div class="fragment">
 <ul>
-<li><p><strong>Next time</strong>: Visualizing 2D categorical and 1D quantitative data</p></li>
-<li><p>Recommended reading:</p>
-<ul>
-<li><a href="https://clauswilke.com/dataviz/visualizing-proportions.html">CW Chapter 10 Visualizing proportions</a>, <a href="https://clauswilke.com/dataviz/visualizing-uncertainty.html#visualizing-the-uncertainty-of-point-estimates">CW Chapter 16.2 Visualizing the uncertainty of point estimates</a>, <a href="https://clauswilke.com/dataviz/nested-proportions.html">CW Chapter 11 Visualizing nested proportions</a></li>
-</ul></li>
+<li><p><strong>Next time</strong>: More high-dimensional data</p></li>
+<li><p>Recommended reading:</p></li>
+<li><p><a href="https://clauswilke.com/dataviz/visualizing-associations.html">CW Chapter 12 Visualizing associations among two or more quantitative variables</a></p></li>
 </ul>
 
 <div class="quarto-auto-generated-content">
