@@ -1,0 +1,316 @@
+---
+title: "Into High-Dimensional Data"
+author: "Prof Ron Yurko"
+footer:  "[mads-36613-fall24](https://ryurko.github.io/mads-36613-fall24/)"
+date: 2024-09-16
+engine: knitr
+format:
+  revealjs:
+    theme: theme.scss
+    chalkboard: true
+    pdf-separate-fragments: true
+    slide-number: c/t
+    smaller: true
+    code-line-numbers: true
+    linestretch: 1.25
+    html-math-method:
+      method: mathjax
+      url: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+---
+
+```{r}
+#| include: false
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center"
+)
+
+library(tidyverse)
+library(palmerpenguins)
+```
+
+## Reminders, previously, and today...
+
++ **HW3 is due Wednesday!**
+
++ **HW4 is posted and due next Wednesday Sept 25th**
+
+. . .
+
++ Walked through visualiziations with scatterplots (always adjust the alpha!)
+
++ Displayed 2D joint distributions with contours, heatmaps, and hexagonal binning
+
++ Discussed approaches for visualizing conditional relationships
+
+. . .
+
+**TODAY:**
+
++ Into high-dimensional data
+
++ What type of structure do we want to capture?
+
+
+---
+
+## Back to the penguins...
+
+Pretend I give you this `penguins` dataset and I ask you to make a plot __for every pairwise comparison__...
+
+```{r}
+penguins |> slice(1:3)
+```
+
+. . .
+
+We can create a __pairs plot__ to see __all__ pairwise relationships __in one plot__
+
+Pairs plot can include the various kinds of pairwise plots we've seen:
+
+- Two quantitative variables: scatterplot
+
+- One categorical, one quantitative: side-by-side violins, stacked
+histograms, overlaid densities
+
+- Two categorical: stacked bars, side-by-side bars, mosaic plots
+
+---
+
+## Create pairs plots with [`GGally`](https://ggobi.github.io/ggally/index.html)
+
+```{r}
+library(GGally)
+penguins |> ggpairs(columns = 3:6)
+```
+
+
+---
+
+## Create pairs plots with [`GGally`](https://ggobi.github.io/ggally/index.html)
+
+
+```{r}
+#| code-line-numbers: "2"
+penguins |> ggpairs(columns = 3:6,
+                    mapping = aes(alpha = 0.5))
+```
+
+
+
+---
+
+## Flexibility in customization
+
+
+```{r}
+#| output-location: slide
+penguins |> 
+  ggpairs(columns = c("bill_length_mm", "body_mass_g", "island"),
+          mapping = aes(alpha = 0.5, color = species), 
+          lower = list(
+            continuous = "smooth_lm", 
+            combo = "facetdensitystrip"
+          ),
+          upper = list(
+            continuous = "cor",
+            combo = "facethist"
+          )
+  )
+```
+
+---
+
+## See Demo 03 for more!
+
+```{r}
+#| echo: false
+penguins |>
+  dplyr::select(species, body_mass_g, ends_with("_mm")) |>
+  ggpairs(mapping = aes(color = species, alpha = 0.5),
+          columns = c("flipper_length_mm", "body_mass_g",
+                      "bill_length_mm", "bill_depth_mm")) +
+  scale_colour_manual(values = c("darkorange","purple","cyan4")) +
+  scale_fill_manual(values = c("darkorange","purple","cyan4")) +
+  theme_bw() +
+  theme(strip.text = element_text(size = 7))
+```
+
+
+---
+
+## What about high-dimensional data?
+
+Consider this [dataset](https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-12-21/readme.md) containing nutritional information about Starbucks drinks:
+
+```{r}
+#| warning: false
+#| message: false
+starbucks <- 
+  read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-12-21/starbucks.csv") |>
+  # Convert columns to numeric that were saved as character
+  mutate(trans_fat_g = as.numeric(trans_fat_g), fiber_g = as.numeric(fiber_g))
+starbucks |> slice(1)
+```
+
+
+**How do we visualize this dataset? **
+
+- Tedious task: make a series of pairs plots (one giant pairs plot would overwhelming)
+
+
+---
+
+## What about high-dimensional data?
+
+```{r}
+#| warning: false
+#| message: false
+starbucks <- 
+  read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-12-21/starbucks.csv") |>
+  # Convert columns to numeric that were saved as character
+  mutate(trans_fat_g = as.numeric(trans_fat_g), fiber_g = as.numeric(fiber_g))
+starbucks |> slice(1)
+```
+
+**Goals to keep in mind with visualizing high-dimensional data:**
+
+- __Visualize structure among observations__ based on distances and projections (next lecture)
+
+- __Visualize structure among variables__ using correlation as "distance"
+
+---
+
+## Correlogram to visualize correlation matrix
+
+Use the [`ggcorrplot`](https://rpkgs.datanovia.com/ggcorrplot/) package:
+
+```{r}
+starbucks_quant_cor <- cor(dplyr::select(starbucks, serv_size_m_l:caffeine_mg))
+
+library(ggcorrplot)
+ggcorrplot(starbucks_quant_cor)
+```
+
+---
+
+## Options to customize correlogram 
+
+```{r}
+#| code-line-numbers: "2"
+ggcorrplot(starbucks_quant_cor,
+           type = "lower", method = "circle")
+```
+
+---
+
+## Reorder variables based on correlation
+
+```{r}
+#| code-line-numbers: "3"
+ggcorrplot(starbucks_quant_cor,
+           type = "lower", method = "circle",
+           hc.order = TRUE)
+```
+
+
+---
+
+## Heatmap displays of observations
+
+```{r}
+heatmap(as.matrix(dplyr::select(starbucks, serv_size_m_l:caffeine_mg)),
+        scale = "column", 
+        labRow = starbucks$product_name,
+        cexRow = .5, cexCol = .75,
+        Rowv = NA, Colv = NA)
+```
+
+
+## Manual version of heatmaps
+
+```{r}
+#| output-location: slide
+
+starbucks |>
+  dplyr::select(product_name, serv_size_m_l:caffeine_mg) |>
+  pivot_longer(serv_size_m_l:caffeine_mg,
+               names_to = "variable",
+               values_to = "raw_value") |>
+  group_by(variable) |>
+  mutate(std_value = (raw_value - mean(raw_value)) / sd(raw_value)) |>
+  ungroup() |>
+  ggplot(aes(y = variable, x = product_name, fill = std_value)) +
+  geom_tile() +
+  theme_light() +
+  theme(axis.text.x = element_text(size = 1, angle = 45),
+        legend.position = "bottom") 
+```
+
+
+---
+
+## Manual version of heatmaps
+
+```{r}
+#| output-location: slide
+#| code-line-numbers: "3"
+starbucks |>
+  dplyr::select(product_name, serv_size_m_l:caffeine_mg) |>
+  mutate(product_name = fct_reorder(product_name, calories)) |>
+  pivot_longer(serv_size_m_l:caffeine_mg,
+               names_to = "variable",
+               values_to = "raw_value") |>
+  group_by(variable) |>
+  mutate(std_value = (raw_value - mean(raw_value)) / sd(raw_value)) |>
+  ungroup() |>
+  ggplot(aes(y = variable, x = product_name, fill = std_value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "darkblue", high = "darkorange") +
+  theme_light() +
+  theme(axis.text.x = element_text(size = 1, angle = 45),
+        legend.position = "bottom") 
+```
+
+
+---
+
+## Parallel coordinates plot with [`ggparcoord`](https://ggobi.github.io/ggally/reference/ggparcoord.html)
+
+
+```{r}
+starbucks |>
+  ggparcoord(columns = 5:15, alphaLines = .1) + #<<
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+
+---
+
+## Recap and next steps
+
++ Discussed creating pairs plots for initial inspection of several variables
+
++ Began thinking about ways to displays dataset structure via correlations
+
++ Used heatmaps and parallel coordinates plot to capture observation and variable structure
+
+. . .
+
++ **HW3 is due Wednesday!**
+
++ **HW4 is posted due next Wednesday Sept 25th**
+
+. . .
+
++ **Next time**: More high-dimensional data
+
++ Recommended reading: 
+
++ [CW Chapter 12 Visualizing associations among two or more quantitative variables](https://clauswilke.com/dataviz/visualizing-associations.html)
+
+
+
+
