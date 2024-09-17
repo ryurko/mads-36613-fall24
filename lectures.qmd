@@ -10,3 +10,4 @@ title: "Lectures"
 | 4         | Sept 9  | Visualizing Quantitative Distributions  | [slides](lectures/04-quant-distributions.qmd)  |
 | 5         | Sept 11 | 2D Quantitative Data  | [slides](lectures/05-2dquant.qmd)  |
 | 6         | Sept 16 | Into High-Dimensional Data  | [slides](lectures/06-into-highdim.qmd)  |
+| 7         | Sept 18 | High-Dimensional Data  | [slides](lectures/07-highdim-methods.qmd)  |

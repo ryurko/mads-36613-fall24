@@ -7,3 +7,6 @@ title: "Demos"
 | 1      | Aug 26  | Into the tidyverse | [HTML](demos/01-into-tidyverse.qmd)  |
 | 2      | Sept 11 | Scatterplots and regression with categorical variables | [HTML](demos/02-scatterplots-regression.qmd)  |
 | 3      | Sept 16  | Simple visuals for high-dimensional data | [HTML](demos/03-simple-highdim.qmd)  |
+| 4      | Sept 18  | Multi-Dimensional Scaling | [HTML](demos/04-mds.qmd)  |
+| 5      | Sept 18  | Principal Component Analysis | [HTML](demos/05-pca.qmd)  |
+| 6      | Sept 18  | Introduction to t-SNE and UMAP | [HTML](demos/06-tsne-umap.qmd)  |
