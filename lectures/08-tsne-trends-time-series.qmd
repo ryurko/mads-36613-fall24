@@ -1,0 +1,1112 @@
+---
+title: "t-SNE + visualizing trends and time series data"
+author: "Prof Ron Yurko"
+footer:  "[mads-36613-fall24](https://ryurko.github.io/mads-36613-fall24/)"
+date: 2024-09-23
+engine: knitr
+format:
+  revealjs:
+    theme: theme.scss
+    chalkboard: true
+    pdf-separate-fragments: true
+    slide-number: c/t
+    smaller: true
+    code-line-numbers: true
+    linestretch: 1.25
+    html-math-method:
+      method: mathjax
+      url: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+---
+
+```{r}
+#| include: false
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center"
+)
+
+library(tidyverse)
+starbucks <- 
+  read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-12-21/starbucks.csv") |>
+  # Convert columns to numeric that were saved as character
+  mutate(trans_fat_g = as.numeric(trans_fat_g), fiber_g = as.numeric(fiber_g))
+
+spiral_data <- 
+  read_csv("https://raw.githubusercontent.com/ryurko/DataViz-Class-Data/main/spirals.csv")
+
+phd_field <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-02-19/phd_by_field.csv")
+stats_phds <- phd_field |>
+  filter(str_detect(tolower(field), "statistics"))
+stat_phd_year_summary <- stats_phds |>
+  group_by(year) |>
+  summarize(n_phds = sum(n_phds))
+```
+
+## Reminders, previously, and today...
+
++ **HW4 is due Wednesday Sept 25th** 
+
++ **You need to email me a draft of your EDA report!** (1 per group)
+
+. . .
+
++ Walked through PCA for dimension reduction
+
++ Discussed choosing the number of PCs with scree plots
+
++ Created biplots for interpreting variable contributions to PCs
+
+. . .
+
+**TODAY:**
+
++ Introduce non-linear dimension reduction with t-SNE plots
+
++ Discuss visualizing trends
+
++ Walk through the basics of time series data
+
+---
+
+## Consider the following spiral structure...
+
+
+```{r}
+#| echo: false
+spiral_data |>
+  ggplot(aes(x, y, color = group)) +
+  geom_point(alpha = 0.75) +
+  ggthemes::scale_color_colorblind() +
+  theme_bw() +
+  theme(legend.position = "none") +
+  coord_fixed()
+```
+
+
+---
+
+## PCA simply rotates the data...
+
+```{r}
+#| echo: false
+spiral_pca <- prcomp(dplyr::select(spiral_data, x:y), 
+                        center = TRUE, scale. = TRUE)
+spiral_pc_matrix <- spiral_pca$x
+spiral_data <- spiral_data |>
+  mutate(pc1 = spiral_pc_matrix[,1], 
+         pc2 = spiral_pc_matrix[,2])
+spiral_data |>
+  ggplot(aes(x = pc1, y = pc2, color = group)) +
+  geom_point(alpha = 0.75) +
+  labs(x = "PC 1", y = "PC 2") +
+  ggthemes::scale_color_colorblind() +
+  theme_bw() +
+  theme(legend.position = "none") +
+  coord_fixed()
+
+
+```
+
+
+---
+
+## Nonlinear dimension reduction with t-SNE
+
+
+```{r}
+#| echo: false
+library(Rtsne)
+set.seed(1234)
+do_tsne <- function(data, perplexity = 5, theta = 0.3, seed = 1234) {
+  set.seed(seed)
+  tsne_fit <- data |>
+    select(where(is.numeric)) |>
+    scale() |>
+    Rtsne(perplexity = perplexity, theta = theta, check_duplicates = FALSE)
+  tsne_fit$Y |>
+    as.data.frame() |>
+    mutate(
+      perplexity = perplexity,
+      theta = theta,
+      seed = seed
+    ) |>
+    cbind(select(data, -where(is.numeric)))
+}
+tsne_data <- c(1, 2, 3, 4, 5, 10, 15, 20) |>
+  map_dfr(~do_tsne(spiral_data, perplexity = .x))
+tsne_data |>
+  filter(perplexity == 5) |>
+  ggplot(aes(V1, V2, color = group)) + 
+  labs(x = "t-SNE 1", y = "t-SNE 2") +
+  geom_point(alpha = 0.75) +
+  ggthemes::scale_color_colorblind() +
+  theme_bw() +
+  theme(legend.position = "none") +
+  coord_fixed()
+
+```
+
+
+---
+
+## [t-distributed stochastic neighbor embedding](https://en.wikipedia.org/wiki/T-distributed_stochastic_neighbor_embedding)
+
+- Construct conditional probability for similarity between observations in original space, i.e., probability $x_i$ will pick $x_j$ as its neighbor 
+
+$$p_{j \mid i}=\frac{\exp \left(-\left\|x_i-x_j\right\|^2 / 2 \sigma_i^2\right)}{\sum_{k \neq i} \exp \left(-\left\|x_i-x_k\right\|^2 / 2 \sigma_i^2\right)},\quad p_{i j}=\frac{\left(p_{j \mid i}+p_{i \mid j}\right)}{2 n}$$
+
+- $\sigma_i$ is the variance of Gaussian centered at $x_i$ controlled by __perplexity__:  $\log (\text { perplexity })=-\sum_j p_{j \mid i} \log _2 p_{j \mid i}$
+
+---
+
+## [t-distributed stochastic neighbor embedding](https://en.wikipedia.org/wiki/T-distributed_stochastic_neighbor_embedding)
+
+- Find points $y_i$ in lower dimensional space with symmetrized student t-distribution
+
+$$q_{j \mid i}=\frac{\left(1+\left\|y_i-y_j\right\|^2\right)^{-1}}{\sum_{k \neq i}\left(1+\left\|y_i-y_k\right\|^2\right)^{-1}}, \quad q_{i j}=\frac{q_{i \mid j}+q_{j \mid i}}{2 n}$$
+
+- Match conditional probabilities by minimize sum of KL divergences $C=\sum_{i j} p_{i j} \log \left(\frac{p_{i j}}{q_{i j}}\right)$
+
+---
+
+## Starbucks t-SNE plot with [`Rtsne`](https://github.com/jkrijthe/Rtsne) 
+
+```{r}
+#| output-location: slide
+set.seed(2013)
+tsne_fit <- starbucks |>
+  dplyr::select(serv_size_m_l:caffeine_mg) |>
+  scale() |>
+  Rtsne(check_duplicates = FALSE) 
+
+starbucks |>
+  mutate(tsne1 = tsne_fit$Y[,1],
+         tsne2 = tsne_fit$Y[,2]) |>
+  ggplot(aes(x = tsne1, y = tsne2, 
+             color = size)) +
+  geom_point(alpha = 0.5) + 
+  labs(x = "t-SNE 1", y = "t-SNE 2")
+```
+
+
+
+---
+
+## Starbucks t-SNE plot - involves randomness!
+
+
+```{r}
+#| output-location: slide
+set.seed(2014) 
+tsne_fit <- starbucks |>
+  dplyr::select(serv_size_m_l:caffeine_mg) |>
+  scale() |>
+  Rtsne(check_duplicates = FALSE) 
+
+starbucks |>
+  mutate(tsne1 = tsne_fit$Y[,1],
+         tsne2 = tsne_fit$Y[,2]) |>
+  ggplot(aes(x = tsne1, y = tsne2, 
+             color = size)) +
+  geom_point(alpha = 0.5) +
+  labs(x = "t-SNE 1", y = "t-SNE 2")
+
+```
+
+
+
+---
+
+## Starbucks t-SNE plot - watch the perplexity!
+
+```{r}
+#| output-location: slide
+set.seed(2013) 
+tsne_fit <- starbucks |>
+  dplyr::select(serv_size_m_l:caffeine_mg) |>
+  scale() |>
+  Rtsne(perplexity = 100, 
+        check_duplicates = FALSE)
+
+starbucks |>
+  mutate(tsne1 = tsne_fit$Y[,1],
+         tsne2 = tsne_fit$Y[,2]) |>
+  ggplot(aes(x = tsne1, y = tsne2, 
+             color = size)) +
+  geom_point(alpha = 0.5) +
+  labs(x = "t-SNE 1", y = "t-SNE 2")
+
+```
+
+
+---
+
+## Back to the spirals: results depend on perplexity!
+
+
+```{r}
+#| echo: false
+ggplot(tsne_data, aes(V1, V2, color = group)) + 
+  geom_point(alpha = 0.75) +
+  facet_wrap(
+    vars(perplexity),
+    labeller = as_labeller(function(x) glue::glue("perplexity = {x}")),
+    scales = "free",
+    nrow = 2
+  ) +
+  labs(x = "t-SNE 1", y = "t-SNE 2") +
+  ggthemes::scale_color_colorblind() +
+  theme_bw() +
+  theme(legend.position = "none")
+```
+
+
+---
+
+## Criticisms of t-SNE plots
+
+
+- __Poor scalability__: does not scale well for large data, can practically
+only embed into 2 or 3 dimensions
+
+- __Meaningless global structure__: distance between clusters might not
+have clear interpretation and cluster size doesn’t have any meaning to
+it
+
+- __Poor performance with very high dimensional data__: need PCA as
+pre-dimension reduction step
+
+- [__Sometime random noise can lead to false positive structure in the
+t-SNE projection__](https://distill.pub/2016/misread-tsne/)
+
+- __Can NOT interpret like PCA!__
+
+---
+
+## Longitudinal data and time series structure
+
+- Consider a _single observation_ measured across time
+
+| Variable   | $T_1$   | $T_2$   | $\dots$  | $T_J$ |
+| ---------- | -------- | -------- | -------- | -------- |
+| $X_1$ | $x_{11}$ | $x_{12}$ | $\dots$  | $x_{1J}$ |
+| $X_2$ | $x_{21}$ | $x_{22}$ | $\dots$  | $x_{2J}$ |
+| $\vdots$    | $\vdots$  | $\vdots$  | $\dots$  | $\vdots$  |
+| $X_P$ | $x_{P1}$ | $x_{P2}$ | $\dots$  | $x_{PJ}$ |
+
+
+- With $N$ observations we have $N$ of these matrices
+
+- Time may consist of regularly spaced intervals
+
+  - For example, $T_1 = t$, $T_2 = t + h$, $T_3 = t + 2h$, etc.
+  
+- Irregularly spaced intervals, then work with the raw $T_1,T_2,...$
+
+
+---
+
+## Example: Statistics PhDs by year
+
+```{r}
+stat_phd_year_summary |>
+  ggplot(aes(x = year, y = n_phds)) +
+  geom_point() +
+  theme_light() +
+  labs(x = "Year", y = "Number of PhDs", title = "Number of Statistics-related PhDs awarded over time")
+```
+
+
+## Example: Statistics PhDs by year
+
+```{r}
+#| code-line-numbers: "4-5"
+stat_phd_year_summary |>
+  ggplot(aes(x = year, y = n_phds)) +
+  geom_point() +
+  scale_x_continuous(breaks = unique(stat_phd_year_summary$year), 
+                     labels = unique(stat_phd_year_summary$year)) + 
+  theme_light() +
+  labs(x = "Year", y = "Number of PhDs", title = "Number of Statistics-related PhDs awarded over time")
+```
+
+---
+
+## Add lines to emphasize order
+
+
+```{r}
+#| code-line-numbers: "4"
+stat_phd_year_summary |>
+  ggplot(aes(x = year, y = n_phds)) +
+  geom_point() +
+  geom_line() +
+  scale_x_continuous(breaks = unique(stat_phd_year_summary$year),
+                     labels = unique(stat_phd_year_summary$year)) +
+  theme_light() +
+  labs(x = "Year", y = "Number of PhDs",
+       title = "Number of Statistics-related PhDs awarded over time")
+```
+
+
+---
+
+## Drop points to emphasize trends
+
+```{r}
+stat_phd_year_summary |>
+  ggplot(aes(x = year, y = n_phds)) +
+  geom_line() +
+  scale_x_continuous(breaks = unique(stat_phd_year_summary$year),
+                     labels = unique(stat_phd_year_summary$year)) +
+  theme_light() +
+  labs(x = "Year", y = "Number of PhDs",
+       title = "Number of Statistics-related PhDs awarded over time")
+```
+
+---
+
+## Can fill the area under the line
+
+
+```{r}
+#| code-line-numbers: "3"
+stat_phd_year_summary |>
+  ggplot(aes(x = year, y = n_phds)) +
+  geom_area(fill = "darkblue", alpha = 0.5) +
+  geom_line() +
+  scale_x_continuous(breaks = unique(stat_phd_year_summary$year),
+                     labels = unique(stat_phd_year_summary$year)) +
+  theme_light() +
+  labs(x = "Year", y = "Number of PhDs",
+       title = "Number of Statistics-related PhDs awarded over time")
+```
+
+
+---
+
+## Several time series? Do NOT only use points
+
+
+```{r}
+#| code-line-numbers: "2"
+stats_phds |>
+  ggplot(aes(x = year, y = n_phds, color = field)) +
+  geom_point() +
+  scale_x_continuous(breaks = unique(stat_phd_year_summary$year),
+                     labels = unique(stat_phd_year_summary$year)) +
+  theme_light() +
+  theme(legend.position = "bottom", legend.text = element_text(size = 7)) +
+  labs(x = "Year", y = "Number of PhDs",
+       title = "Number of Statistics-related PhDs awarded over time",
+       color = "Field")
+```
+
+
+---
+
+## Several time series? Use lines!
+
+```{r}
+#| code-line-numbers: "2"
+stats_phds |>
+  ggplot(aes(x = year, y = n_phds, color = field)) +
+  geom_line() +
+  scale_x_continuous(breaks = unique(stat_phd_year_summary$year),
+                     labels = unique(stat_phd_year_summary$year)) +
+  theme_light() +
+  theme(legend.position = "bottom") +
+  labs(x = "Year", y = "Number of PhDs", color = "Field",
+       title = "Number of Statistics-related PhDs awarded over time")
+```
+
+---
+
+## Using [`ggrepel`](https://ggrepel.slowkow.com/articles/examples.html) to directly label lines
+
+```{r}
+#| output-location: slide
+#| warning: false
+#| message: false
+stats_phds_2017 <- stats_phds |> filter(year == 2017)
+
+library(ggrepel)
+stats_phds |>
+  ggplot(aes(x = year, y = n_phds, color = field)) +
+  geom_line() +
+  # Add the labels:
+  geom_text_repel(data = stats_phds_2017, aes(label = field),
+                  size = 3, 
+                  # Drop the segment connection:
+                  segment.color = NA, 
+                  # Move labels up or down based on overlap
+                  direction = "y",
+                  # Try to align the labels horizontally on the left hand side
+                  hjust = "left") +
+  scale_x_continuous(breaks = unique(stat_phd_year_summary$year),
+                     labels = unique(stat_phd_year_summary$year),
+                     # Update the limits so that there is some padding on the
+                     # x-axis but don't label the new maximum
+                     limits = c(min(stat_phd_year_summary$year),
+                                max(stat_phd_year_summary$year) + 3)) +
+  theme_light() +
+  theme(legend.position = "none") +
+  labs(x = "Year", y = "Number of PhDs", color = "Field",
+       title = "Number of Statistics-related PhDs awarded over time")
+```
+
+---
+
+## Using [`gghighlight`](https://yutannihilation.github.io/gghighlight/articles/gghighlight.html) instead
+
+```{r}
+#| output-location: slide
+#| warning: false
+#| message: false
+#| code-line-numbers: "1,5"
+library(gghighlight)
+stats_phds |>
+  ggplot(aes(x = year, y = n_phds, color = field)) +
+  geom_line() +
+  gghighlight()  +
+  scale_x_continuous(breaks = unique(stat_phd_year_summary$year),
+                     labels = unique(stat_phd_year_summary$year)) +
+  theme_light() +
+  theme(legend.position = "none") +
+  labs(x = "Year", y = "Number of PhDs", color = "Field",
+       title = "Number of Statistics-related PhDs awarded over time")
+```
+
+---
+
+## Using [`gghighlight`](https://yutannihilation.github.io/gghighlight/articles/gghighlight.html) instead
+
+
+```{r}
+#| output-location: slide
+#| warning: false
+#| message: false
+#| code-line-numbers: "1,5"
+library(gghighlight)
+stats_phds |>
+  ggplot(aes(x = year, y = n_phds, color = field)) +
+  geom_line() +
+  gghighlight(line_label_type = "sec_axis")  +
+  scale_x_continuous(breaks = unique(stat_phd_year_summary$year),
+                     labels = unique(stat_phd_year_summary$year)) +
+  theme_light() +
+  theme(legend.position = "none") +
+  labs(x = "Year", y = "Number of PhDs", color = "Field",
+       title = "Number of Statistics-related PhDs awarded over time")
+```
+
+
+---
+
+## How do we plot many lines? NOT LIKE THIS!
+
+```{r}
+#| output-location: slide
+#| code-line-numbers: "1"
+phd_field |>
+  ggplot(aes(x = year, y = n_phds, color = field)) +
+  geom_line() +
+  scale_x_continuous(breaks = unique(stat_phd_year_summary$year),
+                     labels = unique(stat_phd_year_summary$year)) +
+  theme_light() +
+  theme(legend.position = "none") +
+  labs(x = "Year", y = "Number of PhDs", color = "Field",
+       title = "Number of Statistics-related PhDs awarded over time")
+```
+
+---
+
+## Instead we highlight specific lines
+
+```{r}
+#| output-location: slide
+#| warning: false
+#| message: false
+phd_field |>
+  filter(!(field %in% c("Biometrics and biostatistics", "Statistics (mathematics)"))) |>
+  ggplot() +
+  # Add the background lines - need to specify the group to be the field
+  geom_line(aes(x = year, y = n_phds, group = field),
+            color = "gray", size = .5, alpha = .5) +
+  # Now add the layer with the lines of interest:
+  geom_line(data = filter(phd_field,
+                          # Note this is just the opposite of the above since ! is removed
+                          field %in% c("Biometrics and biostatistics", 
+                                       "Statistics (mathematics)")),
+            aes(x = year, y = n_phds, color = field),
+            # Make the size larger
+            size = .75, alpha = 1) +
+  scale_x_continuous(breaks = unique(stat_phd_year_summary$year),
+                     labels = unique(stat_phd_year_summary$year)) +
+  theme_light() +
+  theme(legend.position = "bottom", 
+        # Drop the panel lines making the gray difficult to see
+        panel.grid = element_blank()) +
+  labs(x = "Year", y = "Number of PhDs", color = "Field",
+       title = "Number of Statistics-related PhDs awarded over time")
+```
+
+
+---
+
+## Or you can use [`gghighlight`](https://yutannihilation.github.io/gghighlight/articles/gghighlight.html) instead
+
+
+```{r}
+#| output-location: slide
+#| warning: false
+#| message: false
+#| code-line-numbers: "4-5"
+phd_field |>
+  ggplot(aes(x = year, y = n_phds, color = field)) +
+  geom_line() +
+  gghighlight(field %in% c("Biometrics and biostatistics", "Statistics (mathematics)"),
+              line_label_type = "sec_axis") +
+  scale_x_continuous(breaks = unique(stat_phd_year_summary$year),
+                     labels = unique(stat_phd_year_summary$year)) +
+  theme_light() +
+  theme(legend.position = "none") +
+  labs(x = "Year", y = "Number of PhDs", color = "Field",
+       title = "Number of Statistics-related PhDs awarded over time")
+```
+
+---
+
+## What about Nightingale's rose diagram?
+
+```{r, echo = FALSE, fig.align='center', out.width = "75%"}
+knitr::include_graphics("https://daily.jstor.org/wp-content/uploads/2020/08/florence_nightingagle_data_visualization_visionary_1050x700.jpg")
+```
+
+---
+
+## What about Nightingale's rose diagram?
+
+```{r}
+#| echo: false
+library(HistData)
+
+crimean_war_data <- Nightingale |>
+  dplyr::select(Date, Month, Year, Disease, Wounds, Other) |>
+  # Now pivot those columns to take up separate rows:
+  pivot_longer(Disease:Other,
+               names_to = "cause", values_to = "count")
+
+crimean_war_data <- crimean_war_data |>
+  mutate(time_period = ifelse(Date <= as.Date("1855-03-01"),
+                              "April 1854 to March 1855", 
+                              "April 1855 to March 1856"))
+crimean_war_data |> 
+  # Manually relevel it to match the original plot
+  mutate(Month = fct_relevel(Month, 
+                             "Jul", "Aug", "Sep", "Oct", "Nov",
+                             "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun")) |>
+  ggplot(aes(x = Month, y = count)) + 
+  geom_col(aes(fill = cause), width = 1, 
+           position = "identity", alpha = 0.5) + 
+  coord_polar() + 
+  facet_wrap(~ time_period, ncol = 2) +
+  scale_fill_manual(values = c("skyblue3", "grey30", "firebrick")) +
+  scale_y_sqrt() +
+  theme_void() +
+  # All of this below is to just customize the theme in a way that we are
+  # close to resembling the original plot (ie lets make it look old!)
+  theme(axis.text.x = element_text(size = 9),
+        strip.text = element_text(size = 11),
+        legend.position = "bottom",
+        plot.background = element_rect(fill = alpha("cornsilk", 0.5)),
+        plot.margin = unit(c(10, 10, 10, 10), "pt"),
+        plot.title = element_text(vjust = 5)) +
+  labs(title = "Diagram of the Causes of Mortality in the Army in the East")
+```
+
+
+---
+
+## What about displaying lines instead?
+
+```{r}
+#| echo: false
+crimean_war_data |> 
+  ggplot(aes(x = Date, y = count, color = cause)) + 
+  geom_line() +
+  # Add a reference line at the cutoff point
+  geom_vline(xintercept = as.Date("1855-03-01"), linetype = "dashed",
+             color = "gray") +
+  scale_color_manual(values = c("skyblue3", "grey30", "firebrick")) +
+  # Format to use abbreviate month %b with year %Y
+  scale_x_date(date_labels = "%b %Y") +
+  theme_light() +
+  theme(legend.position = "bottom") +
+  labs(title = "Diagram of the Causes of Mortality in the Army in the East",
+       y = "Counts", x = "Date")
+```
+
+
+---
+
+## Things of interest for time series data
+
+Time series can be characterized by three features:
+
+1. __Trends__: Does the variable increase or decrease over time, on average?
+
+2. __Seasonality__: Are there changes in the variable that regularly happen (e.g., every winter, every hour, etc.)? Sometimes called periodicity.
+
+3. __Noise__: Variation in the variable beyond average trends and seasonality.
+
+**Moving averages are a starting point for visualizing how a trend changes over time**
+
+---
+
+```{r, echo = FALSE, fig.align='center', out.width="80%"}
+knitr::include_graphics("https://www.ft.com/__origami/service/image/v2/images/raw/https%3A%2F%2Fd6c748xw2pzm8.cloudfront.net%2Fprod%2Fc7ce2780-2f14-11eb-8e8a-cdb0723f9e68-standard.png?dpr=1&fit=scale-down&quality=highest&source=next&width=700")
+```
+
+
+---
+
+```{r, echo = FALSE, fig.align='center'}
+knitr::include_graphics("https://icharts.coinlore.com/img/simple-moving-averages-ftx-token.jpg?time=1680119681")
+```
+
+
+---
+
+## Be responsible with your axes!
+
+```{r, echo = FALSE, fig.align='center', out.width="50%"}
+knitr::include_graphics("https://cdn.sisense.com/wp-content/uploads/National-Review-Climate-Change-770x689.png")
+```
+
+
+---
+
+## Be responsible with your axes!
+
+```{r, echo = FALSE, fig.align='center', out.width="50%"}
+knitr::include_graphics("http://www.washingtonpost.com/blogs/the-fix/files/2015/12/NRO_Temp_1.jpg")
+```
+
+
+---
+
+## Moving Average Plots
+
+The _Financial Times_ COVID-19 plots displayed a __moving average__ (sometimes called a __rolling average__)
+
+**Intuition**
+
+1. Divide your data into small subsets ("windows")
+
+2. Compute the average within each window
+
+3. Connect the averages together to make a trend line
+
+. . .
+
+Sometimes called a __simple moving average__
+
+This is exactly what we did with LOESS... we called this a _sliding window_, but it's the same thing
+
+---
+
+```{r}
+#| echo: false
+
+co2_tbl <- tibble(co2_val = as.numeric(co2)) |>
+  mutate(obs_i = 1:n())
+
+co2_tbl <- co2_tbl |>
+  # We can use the seq() function with dates which is pretty useful!
+  mutate(obs_date = seq(as.Date("1/1/1959", format = "%m/%d/%Y"), 
+                        by = "month",
+                        length.out = n()))
+
+co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_point(color = "red") + 
+  labs(x = "Year", y = "CO2 (ppm)",
+       title = "CO2 Emissions Over Time")
+
+```
+
+
+---
+
+```{r}
+#| echo: false
+co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_point(color = "red") + 
+  geom_line(color = "red") +
+  labs(x = "Year", y = "CO2 (ppm)",
+       title = "CO2 Emissions Over Time")
+```
+
+
+---
+
+```{r}
+#| echo: false
+co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line(color = "red") +
+  labs(x = "Year", y = "CO2 (ppm)",
+       title = "CO2 Emissions Over Time")
+
+```
+
+
+---
+
+```{r}
+#| echo: false
+library(ggseas)
+co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line(color="red") +
+  stat_rollapplyr(width = 12, align = "right") +
+  labs(x = "Year", y = "CO2 (ppm)", 
+       title = "CO2 Emissions Over Time")
+```
+
+
+---
+
+```{r}
+#| echo: false
+co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  #geom_line(color="red") +
+  stat_rollapplyr(width = 12, align = "right") +
+  labs(x = "Year", y = "CO2 (ppm)", 
+       title = "CO2 Emissions Over Time")
+```
+
+
+---
+
+```{r}
+#| echo: false
+co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line(color="red") +
+  stat_rollapplyr(width = 12, align = "right") +
+  labs(x = "Year", y = "CO2 (ppm)", 
+       title = "CO2 Emissions Over Time")
+```
+
+
+---
+
+## How are moving averages computed?
+
+**Intuition**
+
+1. Divide your data into small subsets (_windows_)
+
+2. Compute the average within each window
+
+3. Connect the averages together to make a trend line
+
+. . .
+
+Mathematically, a moving average can be written as the following:
+
+$$\mu_k = \frac{\sum_{t=k - h + 1}^k X_t}{h}$$
+
++ Large $h$: Smooth line; captures global trends
+
++ Small $h$: Jagged/volatile line; captures local trends
+
+
+---
+
+## Working with Time Series
+
+`co2`: Mauna Loa Atmospheric CO2 Concentration dataset (monthly $\text{CO}^2$ concentration 1959 to 1997)
+
+```{r}
+co2_tbl |>
+  ggplot(aes(x = obs_i, y = co2_val)) + 
+  geom_line() + 
+  labs(x = "Time index", y = "CO2 (ppm)")
+```
+
+---
+
+## Formatting Dates
+
+Can use `as.Date()` to create time indexes.
+
+```{r}
+#| echo: false
+co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line() + 
+  labs(x = "Year", y = "CO2 (ppm)")
+```
+
+Default format is Year/Month/Day. For something else, need to specify `format` in `as.Date()` (e.g., `format = "%m/%d/%Y"`)
+
+---
+
+## Use `scale_x_date()` to create interpretable axis labels 
+
+```{r, echo = FALSE, fig.align='center', fig.height=4}
+co2_tbl[1:26,] |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line() + 
+  scale_x_date(date_breaks = "4 months", date_labels = "%b %Y") +
+  labs(x = "Year", y = "CO2 (ppm)") +
+  # Modify the x-axis text 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+---
+
+### Use [`ggseas`](https://cran.r-project.org/web/packages/ggseas/vignettes/ggseas.html) package to plot moving averages
+
+
+```{r}
+library(ggseas)
+co2_tbl |> 
+  ggplot(aes(x = obs_date, y = co2_val)) + geom_line(color = "red") + 
+  stat_rollapplyr(width = 12, align = "right") +
+  labs(x = "Year", y = "CO2 (ppm)", title = "Width = 12")
+```
+
+
+---
+
+```{r}
+#| echo: false
+library(patchwork)
+wid2 <- co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line(color="red") +
+  stat_rollapplyr(width = 2, align = "right") +
+  labs(x = "Year", y = "CO2 (ppm)", 
+       title = "Width = 2")
+
+wid24 <- co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line(color="red") +
+  stat_rollapplyr(width = 24, align = "right") +
+  labs(x = "Year", y = "CO2 (ppm)", 
+       title = "Width = 24")
+wid2 + wid24
+```
+
+
+
+---
+
+```{r}
+#| echo: false
+co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line(color="red") +
+  stat_rollapplyr(width = 100, align = "right") + 
+  labs(x = "Year", y = "CO2 (ppm)", 
+       title = "Width = 100")
+```
+
+
+---
+
+## Other Moving Averages
+
+
+Two other common averages: Cumulative moving averages and weighted moving averages.
+
++ __Cumulative moving average__: The average at time $k$ is the average of all points at and before $k$. Mathematically:
+
+$$\mu_k^{(CMA)} = \frac{\sum_{t=1}^k X_t}{k}$$
+
+. . .
+
++ __Weighted moving average__: Same as simple moving average, but different measurements get different weights for the average.
+
+$$\mu_k^{(WMA)} = \frac{\sum_{t=k - h + 1}^k X_t \cdot w_t}{ \sum_{t=k - h + 1}^k w_t}$$
+
+
+---
+
+## Working with lags
+
+Time series data is fundamentally different from other data problems we've worked with because measurements are  __not independent__
+
+Obvious example: The temperature today is correlated with temperature yesterday. (_Maybe not in Pittsburgh?_)
+
+. . .
+
+Important term: __lags__. Used to determine if one time point influences future time points.
+
+Lag 1: Comparing time series at time $t$ with time series at time $t - 1$. 
+
+Lag 2: Comparing time series at time $t$ with time series at time $t - 2$.
+
+And so on...
+
+. . .
+
+Let's say we have time measurements $(X_1, X_2, X_3, X_4, X_5)$. 
+
+The $\ell = 1$ lag is $(X_2, X_3, X_4, X_5)$ vs $(X_1, X_2, X_3, X_4)$. 
+
+. . .
+
+The $\ell = 2$ lag is $(X_3, X_4, X_5)$ vs $(X_1, X_2, X_3)$.
+
+Consider: Are previous outcomes (lags) predictive of future outcomes?
+
+---
+
+## Autocorrelation
+
+__Autocorrelation__: Correlation between a time series and a lagged version of itself.
+
+Define $r_{\ell}$ as the correlation between a time series and Lag $\ell$ of that time series.
+
+. . .
+
+Lag 1: $r_1$ is correlation between $(X_2, X_3, X_4, X_5)$ and $(X_1,X_2,X_3,X_4)$ 
+
+Lag 2: $r_2$ is correlation between $(X_3, X_4, X_5)$ and $(X_1,X_2,X_3)$
+
+And so on...
+
+. . .
+
+Common diagnostic: Plot $\ell$ on x-axis, $r_{\ell}$ on y-axis.
+
+Tells us if correlations are "significantly large" or "significantly small" for certain lags
+
+To make an autocorrelation plot, we use the `acf()` function; the `ggplot` version uses `autoplot()`
+
+---
+
+## Autocorrelation plots
+
+
+```{r}
+library(ggfortify)
+auto_corr <- acf(co2_tbl$co2_val, plot = FALSE)
+autoplot(auto_corr)
+```
+
+
+---
+
+### Autocorrelation Plots and Seasonality
+
+With strong global trends, autocorrelations will be very positive.
+
+. . .
+
+**Helpful: Visualize autocorrelations after removing the global trend (compute moving average with `rollapply()`)**
+
+
+```{r}
+#| echo: false
+wid12 <- co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line(color="red") +
+  stat_rollapplyr(width = 12, align = "right") +
+  labs(x = "Year", y = "CO2 (ppm)")
+
+co2_tbl <- co2_tbl |>
+  mutate(mov_ave = 
+           zoo::rollapply(co2_val, width = 12, FUN = "mean", 
+                          align = "right", fill = NA),
+         res = co2_val - mov_ave)
+
+resid_plot <- co2_tbl |>
+  ggplot(aes(x = obs_date, y = res)) +
+  geom_line() +
+  labs(x = "Year", y = "Residuals of CO2 (ppm)")
+
+wid12 + resid_plot
+```
+
+
+---
+
+## Autocorrelation Plots and Seasonality
+
+```{r}
+#| echo: false
+autoplot(acf(tail(co2_tbl$res, -11), plot = FALSE))
+```
+
+---
+
+### Seasonality Decomposition
+
+Remember that there are three main components to a time series:
+
+1. Average trends
+
+2. Seasonality
+
+3. Noise
+
+. . .
+
+Use `ggsdc()` (from [`ggseas`](https://cran.r-project.org/web/packages/ggseas/vignettes/ggseas.html)) to decompose a time series into these three components
+
++ Plots the observed time series.
+
++ Plots a loess curve as the global trend.
+
++ Plots another loess curve on (observed - trend) as the seasonality.
+
++ Plots the noise (observed - trend - seasonality).
+
+---
+
+### Seasonality Decomposition
+
+
+```{r,}
+co2_tbl |>
+  ggsdc(aes(obs_date, co2_val), frequency = 12, method = "stl", s.window = 12) +
+  geom_line() + labs(x = "Year", y = "CO2 (ppm)")
+```
+
+
+---
+
+## Recap and next steps
+
++ Discussed non-linear dimension reduction with t-SNE plots
+
++ Discussed various aspects of visualizing trends
+
++ Walked through basics of time series data, such as moving averages, autocorrelation, seasonality
+
+. . .
+
+
++ **HW4 is due Wednesday Sept 25th**
+
++ **You need to email me a draft of your EDA report!** (1 per group)
+
+. . .
+
++ **Next time**: Visualizing spatial data
+
++ Recommended reading: [How to Use t-SNE Effectively](https://distill.pub/2016/misread-tsne/), [Understanding UMAP](https://pair-code.github.io/understanding-umap/), [CW CH 13 Visualizing time series and other functions of an independent variable](https://clauswilke.com/dataviz/time-series.html), [CW CH 14 Visualizing trends](https://clauswilke.com/dataviz/visualizing-trends.html)
+
+
+

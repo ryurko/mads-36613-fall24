@@ -10,3 +10,4 @@ title: "Demos"
 | 4      | Sept 18  | Multi-Dimensional Scaling | [HTML](demos/04-mds.qmd)  |
 | 5      | Sept 18  | Principal Component Analysis | [HTML](demos/05-pca.qmd)  |
 | 6      | Sept 18  | Introduction to t-SNE and UMAP | [HTML](demos/06-tsne-umap.qmd)  |
+| 7      | Sept 23  | Visualizing trends and time series data | [HTML](de07-trends-time-series.qmd)  |

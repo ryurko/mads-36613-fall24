@@ -11,3 +11,4 @@ title: "Lectures"
 | 5         | Sept 11 | 2D Quantitative Data  | [slides](lectures/05-2dquant.qmd)  |
 | 6         | Sept 16 | Into High-Dimensional Data  | [slides](lectures/06-into-highdim.qmd)  |
 | 7         | Sept 18 | High-Dimensional Data  | [slides](lectures/07-highdim-methods.qmd)  |
+| 8         | Sept 23 | t-SNE + visualizing trends and time series data  | [slides](lectures/08-tsne-trends-time-series.qmd)  |
