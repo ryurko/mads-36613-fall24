@@ -1,67 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/index.html</loc>
-    <lastmod>2024-09-17T23:05:30.112Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/lectures.html</loc>
-    <lastmod>2024-09-17T23:05:30.112Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/demos/04-mds.html</loc>
-    <lastmod>2024-09-17T23:05:30.112Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/demos/03-simple-highdim.html</loc>
-    <lastmod>2024-09-17T23:05:30.112Z</lastmod>
+    <loc>https://ryurko.github.io/mads-36613-fall24/demos/01-into-tidyverse.html</loc>
+    <lastmod>2024-09-23T01:51:40.752Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/mads-36613-fall24/demos/02-scatterplots-regression.html</loc>
-    <lastmod>2024-09-17T23:05:30.112Z</lastmod>
+    <lastmod>2024-09-23T01:51:40.752Z</lastmod>
   </url>
   <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/01-intro.html</loc>
-    <lastmod>2024-09-17T23:05:30.112Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/02-categorical.html</loc>
-    <lastmod>2024-09-17T23:05:30.112Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/07-highdim-methods.html</loc>
-    <lastmod>2024-09-17T23:05:30.112Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/04-quant-distributions.html</loc>
-    <lastmod>2024-09-17T23:05:30.112Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/05-2dquant.html</loc>
-    <lastmod>2024-09-17T23:05:30.112Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/06-into-highdim.html</loc>
-    <lastmod>2024-09-17T23:05:30.112Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/03-2dcategorical-1dquant.html</loc>
-    <lastmod>2024-09-17T23:05:30.112Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/demos/01-into-tidyverse.html</loc>
-    <lastmod>2024-09-17T23:05:30.112Z</lastmod>
+    <loc>https://ryurko.github.io/mads-36613-fall24/demos/04-mds.html</loc>
+    <lastmod>2024-09-23T01:51:40.752Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/mads-36613-fall24/demos/05-pca.html</loc>
-    <lastmod>2024-09-17T23:05:30.112Z</lastmod>
+    <lastmod>2024-09-23T01:51:40.752Z</lastmod>
   </url>
   <url>
-    <loc>https://ryurko.github.io/mads-36613-fall24/demos/06-tsne-umap.html</loc>
-    <lastmod>2024-09-17T23:05:30.112Z</lastmod>
+    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/02-categorical.html</loc>
+    <lastmod>2024-09-23T01:51:40.753Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/05-2dquant.html</loc>
+    <lastmod>2024-09-23T01:51:40.753Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/04-quant-distributions.html</loc>
+    <lastmod>2024-09-23T01:51:40.753Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/01-intro.html</loc>
+    <lastmod>2024-09-23T01:51:40.753Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/index.html</loc>
+    <lastmod>2024-09-23T01:51:40.753Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/mads-36613-fall24/demos.html</loc>
-    <lastmod>2024-09-17T23:05:30.112Z</lastmod>
+    <lastmod>2024-09-23T01:51:40.752Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/03-2dcategorical-1dquant.html</loc>
+    <lastmod>2024-09-23T01:51:40.753Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/06-into-highdim.html</loc>
+    <lastmod>2024-09-23T01:51:40.753Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/08-tsne-trends-time-series.html</loc>
+    <lastmod>2024-09-23T01:51:40.754Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/lectures/07-highdim-methods.html</loc>
+    <lastmod>2024-09-23T01:51:40.753Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/lectures.html</loc>
+    <lastmod>2024-09-23T01:51:40.753Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/demos/06-tsne-umap.html</loc>
+    <lastmod>2024-09-23T01:51:40.753Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/demos/03-simple-highdim.html</loc>
+    <lastmod>2024-09-23T01:51:40.752Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/mads-36613-fall24/demos/07-trends-time-series.html</loc>
+    <lastmod>2024-09-23T01:51:40.753Z</lastmod>
   </url>
 </urlset>
