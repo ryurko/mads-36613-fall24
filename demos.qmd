@@ -11,3 +11,4 @@ title: "Demos"
 | 5      | Sept 18  | Principal Component Analysis | [HTML](demos/05-pca.qmd)  |
 | 6      | Sept 18  | Introduction to t-SNE and UMAP | [HTML](demos/06-tsne-umap.qmd)  |
 | 7      | Sept 23  | Visualizing trends and time series data | [HTML](demos/07-trends-time-series.qmd)  |
+| 8      | Sept 25  | Visualizations and inference for spatial data | [HTML](demos/08-intro-spatial-data.qmd)  |

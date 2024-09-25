@@ -1,0 +1,987 @@
+---
+title: "Time series and intro to spatial data"
+author: "Prof Ron Yurko"
+footer:  "[mads-36613-fall24](https://ryurko.github.io/mads-36613-fall24/)"
+date: 2024-09-25
+engine: knitr
+format:
+  revealjs:
+    theme: theme.scss
+    chalkboard: true
+    pdf-separate-fragments: true
+    slide-number: c/t
+    smaller: true
+    code-line-numbers: true
+    linestretch: 1.25
+    html-math-method:
+      method: mathjax
+      url: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+---
+
+```{r}
+#| include: false
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center"
+)
+
+library(tidyverse)
+
+airports <- read_csv("https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat",
+                     col_names = c("ID", "name", "city", "country", "IATA_FAA", 
+                                   "ICAO", "lat", "lon", "altitude", "timezone", "DST"))
+
+routes <- read_csv("https://raw.githubusercontent.com/jpatokal/openflights/master/data/routes.dat",
+                   col_names = c("airline", "airlineID", "sourceAirport", 
+                                 "sourceAirportID", "destinationAirport", 
+                                 "destinationAirportID", "codeshare", "stops",
+                                 "equipment"))
+
+departures <- routes |> 
+  group_by(sourceAirportID) |>
+  summarize(n_depart = n()) |>
+  mutate(sourceAirportID = as.integer(sourceAirportID))
+
+arrivals <- routes |> 
+  group_by(destinationAirportID) |> 
+  summarize(n_arrive = n()) |> 
+  mutate(destinationAirportID = as.integer(destinationAirportID))
+
+airports <- airports |>
+  left_join(departures, by = c("ID" = "sourceAirportID"))
+airports <- airports |>
+  left_join(arrivals, by = c("ID" = "destinationAirportID"))
+
+```
+
+
+## Reminders, previously, and today...
+
++ **HW4 is due TONIGHT Sept 25th** 
+
++ **You need to email me a draft of your EDA report!** (1 per group)
+
+. . .
+
++ Walked through non-linear dimension reduction with t-SNE
+
++ Discussed visualizing trends, highglighting points of emphasis
+
+. . .
+
+**TODAY:**
+
++ Walk through the basics of time series data techniques
+
++ Introduce visualizations and inference with spatial data
+
+---
+
+## Things of interest for time series data
+
+Time series can be characterized by three features:
+
+1. __Trends__: Does the variable increase or decrease over time, on average?
+
+2. __Seasonality__: Are there changes in the variable that regularly happen (e.g., every winter, every hour, etc.)? Sometimes called periodicity.
+
+3. __Noise__: Variation in the variable beyond average trends and seasonality.
+
+**Moving averages are a starting point for visualizing how a trend changes over time**
+
+---
+
+```{r, echo = FALSE, fig.align='center', out.width="80%"}
+knitr::include_graphics("https://www.ft.com/__origami/service/image/v2/images/raw/https%3A%2F%2Fd6c748xw2pzm8.cloudfront.net%2Fprod%2Fc7ce2780-2f14-11eb-8e8a-cdb0723f9e68-standard.png?dpr=1&fit=scale-down&quality=highest&source=next&width=700")
+```
+
+
+---
+
+```{r, echo = FALSE, fig.align='center'}
+knitr::include_graphics("https://icharts.coinlore.com/img/simple-moving-averages-ftx-token.jpg?time=1680119681")
+```
+
+
+---
+
+## Be responsible with your axes!
+
+```{r, echo = FALSE, fig.align='center', out.width="50%"}
+knitr::include_graphics("https://cdn.sisense.com/wp-content/uploads/National-Review-Climate-Change-770x689.png")
+```
+
+
+---
+
+## Be responsible with your axes!
+
+```{r, echo = FALSE, fig.align='center', out.width="50%"}
+knitr::include_graphics("http://www.washingtonpost.com/blogs/the-fix/files/2015/12/NRO_Temp_1.jpg")
+```
+
+
+---
+
+## Moving Average Plots
+
+The _Financial Times_ COVID-19 plots displayed a __moving average__ (sometimes called a __rolling average__)
+
+**Intuition**
+
+1. Divide your data into small subsets ("windows")
+
+2. Compute the average within each window
+
+3. Connect the averages together to make a trend line
+
+. . .
+
+Sometimes called a __simple moving average__
+
+This is exactly what we did with LOESS... we called this a _sliding window_, but it's the same thing
+
+---
+
+```{r}
+#| echo: false
+
+co2_tbl <- tibble(co2_val = as.numeric(co2)) |>
+  mutate(obs_i = 1:n())
+
+co2_tbl <- co2_tbl |>
+  # We can use the seq() function with dates which is pretty useful!
+  mutate(obs_date = seq(as.Date("1/1/1959", format = "%m/%d/%Y"), 
+                        by = "month",
+                        length.out = n()))
+
+co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_point(color = "red") + 
+  labs(x = "Year", y = "CO2 (ppm)",
+       title = "CO2 Emissions Over Time")
+
+```
+
+
+---
+
+```{r}
+#| echo: false
+co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_point(color = "red") + 
+  geom_line(color = "red") +
+  labs(x = "Year", y = "CO2 (ppm)",
+       title = "CO2 Emissions Over Time")
+```
+
+
+---
+
+```{r}
+#| echo: false
+co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line(color = "red") +
+  labs(x = "Year", y = "CO2 (ppm)",
+       title = "CO2 Emissions Over Time")
+
+```
+
+
+---
+
+```{r}
+#| echo: false
+library(ggseas)
+co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line(color="red") +
+  stat_rollapplyr(width = 12, align = "right") +
+  labs(x = "Year", y = "CO2 (ppm)", 
+       title = "CO2 Emissions Over Time")
+```
+
+
+---
+
+```{r}
+#| echo: false
+co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  #geom_line(color="red") +
+  stat_rollapplyr(width = 12, align = "right") +
+  labs(x = "Year", y = "CO2 (ppm)", 
+       title = "CO2 Emissions Over Time")
+```
+
+
+---
+
+```{r}
+#| echo: false
+co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line(color="red") +
+  stat_rollapplyr(width = 12, align = "right") +
+  labs(x = "Year", y = "CO2 (ppm)", 
+       title = "CO2 Emissions Over Time")
+```
+
+
+---
+
+## How are moving averages computed?
+
+**Intuition**
+
+1. Divide your data into small subsets (_windows_)
+
+2. Compute the average within each window
+
+3. Connect the averages together to make a trend line
+
+. . .
+
+Mathematically, a moving average can be written as the following:
+
+$$\mu_k = \frac{\sum_{t=k - h + 1}^k X_t}{h}$$
+
++ Large $h$: Smooth line; captures global trends
+
++ Small $h$: Jagged/volatile line; captures local trends
+
+
+---
+
+## Working with Time Series
+
+`co2`: Mauna Loa Atmospheric CO2 Concentration dataset (monthly $\text{CO}^2$ concentration 1959 to 1997)
+
+```{r}
+co2_tbl |>
+  ggplot(aes(x = obs_i, y = co2_val)) + 
+  geom_line() + 
+  labs(x = "Time index", y = "CO2 (ppm)")
+```
+
+---
+
+## Formatting Dates
+
+Can use `as.Date()` to create time indexes.
+
+```{r}
+#| echo: false
+co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line() + 
+  labs(x = "Year", y = "CO2 (ppm)")
+```
+
+Default format is Year/Month/Day. For something else, need to specify `format` in `as.Date()` (e.g., `format = "%m/%d/%Y"`)
+
+---
+
+## Use `scale_x_date()` to create interpretable axis labels 
+
+```{r, echo = FALSE, fig.align='center', fig.height=4}
+co2_tbl[1:26,] |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line() + 
+  scale_x_date(date_breaks = "4 months", date_labels = "%b %Y") +
+  labs(x = "Year", y = "CO2 (ppm)") +
+  # Modify the x-axis text 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+---
+
+### Use [`ggseas`](https://cran.r-project.org/web/packages/ggseas/vignettes/ggseas.html) package to plot moving averages
+
+
+```{r}
+library(ggseas)
+co2_tbl |> 
+  ggplot(aes(x = obs_date, y = co2_val)) + geom_line(color = "red") + 
+  stat_rollapplyr(width = 12, align = "right") +
+  labs(x = "Year", y = "CO2 (ppm)", title = "Width = 12")
+```
+
+
+---
+
+```{r}
+#| echo: false
+library(patchwork)
+wid2 <- co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line(color="red") +
+  stat_rollapplyr(width = 2, align = "right") +
+  labs(x = "Year", y = "CO2 (ppm)", 
+       title = "Width = 2")
+
+wid24 <- co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line(color="red") +
+  stat_rollapplyr(width = 24, align = "right") +
+  labs(x = "Year", y = "CO2 (ppm)", 
+       title = "Width = 24")
+wid2 + wid24
+```
+
+
+
+---
+
+```{r}
+#| echo: false
+co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line(color="red") +
+  stat_rollapplyr(width = 100, align = "right") + 
+  labs(x = "Year", y = "CO2 (ppm)", 
+       title = "Width = 100")
+```
+
+
+---
+
+## Other Moving Averages
+
+
+Two other common averages: Cumulative moving averages and weighted moving averages.
+
++ __Cumulative moving average__: The average at time $k$ is the average of all points at and before $k$. Mathematically:
+
+$$\mu_k^{(CMA)} = \frac{\sum_{t=1}^k X_t}{k}$$
+
+. . .
+
++ __Weighted moving average__: Same as simple moving average, but different measurements get different weights for the average.
+
+$$\mu_k^{(WMA)} = \frac{\sum_{t=k - h + 1}^k X_t \cdot w_t}{ \sum_{t=k - h + 1}^k w_t}$$
+
+
+---
+
+## Working with lags
+
+Time series data is fundamentally different from other data problems we've worked with because measurements are  __not independent__
+
+Obvious example: The temperature today is correlated with temperature yesterday. (_Maybe not in Pittsburgh?_)
+
+. . .
+
+Important term: __lags__. Used to determine if one time point influences future time points.
+
+Lag 1: Comparing time series at time $t$ with time series at time $t - 1$. 
+
+Lag 2: Comparing time series at time $t$ with time series at time $t - 2$.
+
+And so on...
+
+. . .
+
+Let's say we have time measurements $(X_1, X_2, X_3, X_4, X_5)$. 
+
+The $\ell = 1$ lag is $(X_2, X_3, X_4, X_5)$ vs $(X_1, X_2, X_3, X_4)$. 
+
+. . .
+
+The $\ell = 2$ lag is $(X_3, X_4, X_5)$ vs $(X_1, X_2, X_3)$.
+
+Consider: Are previous outcomes (lags) predictive of future outcomes?
+
+---
+
+## Autocorrelation
+
+__Autocorrelation__: Correlation between a time series and a lagged version of itself.
+
+Define $r_{\ell}$ as the correlation between a time series and Lag $\ell$ of that time series.
+
+. . .
+
+Lag 1: $r_1$ is correlation between $(X_2, X_3, X_4, X_5)$ and $(X_1,X_2,X_3,X_4)$ 
+
+Lag 2: $r_2$ is correlation between $(X_3, X_4, X_5)$ and $(X_1,X_2,X_3)$
+
+And so on...
+
+. . .
+
+Common diagnostic: Plot $\ell$ on x-axis, $r_{\ell}$ on y-axis.
+
+Tells us if correlations are "significantly large" or "significantly small" for certain lags
+
+To make an autocorrelation plot, we use the `acf()` function; the `ggplot` version uses `autoplot()`
+
+---
+
+## Autocorrelation plots
+
+
+```{r}
+library(ggfortify)
+auto_corr <- acf(co2_tbl$co2_val, plot = FALSE)
+autoplot(auto_corr)
+```
+
+
+---
+
+### Autocorrelation Plots and Seasonality
+
+With strong global trends, autocorrelations will be very positive.
+
+. . .
+
+**Helpful: Visualize autocorrelations after removing the global trend (compute moving average with `rollapply()`)**
+
+```{r}
+#| echo: false
+wid12 <- co2_tbl |>
+  ggplot(aes(x = obs_date, y = co2_val)) + 
+  geom_line(color="red") +
+  stat_rollapplyr(width = 12, align = "right") +
+  labs(x = "Year", y = "CO2 (ppm)")
+
+co2_tbl <- co2_tbl |>
+  mutate(mov_ave = 
+           zoo::rollapply(co2_val, width = 12, FUN = "mean", 
+                          align = "right", fill = NA),
+         res = co2_val - mov_ave)
+
+resid_plot <- co2_tbl |>
+  ggplot(aes(x = obs_date, y = res)) +
+  geom_line() +
+  labs(x = "Year", y = "Residuals of CO2 (ppm)")
+
+wid12 + resid_plot
+```
+
+
+---
+
+## Autocorrelation Plots and Seasonality
+
+```{r}
+#| echo: false
+autoplot(acf(tail(co2_tbl$res, -11), plot = FALSE))
+```
+
+---
+
+### Seasonality Decomposition
+
+Remember that there are three main components to a time series:
+
+1. Average trends
+
+2. Seasonality
+
+3. Noise
+
+. . .
+
+Use `ggsdc()` (from [`ggseas`](https://cran.r-project.org/web/packages/ggseas/vignettes/ggseas.html)) to decompose a time series into these three components
+
++ Plots the observed time series.
+
++ Plots a loess curve as the global trend.
+
++ Plots another loess curve on (observed - trend) as the seasonality.
+
++ Plots the noise (observed - trend - seasonality).
+
+---
+
+### Seasonality Decomposition
+
+
+```{r,}
+co2_tbl |>
+  ggsdc(aes(obs_date, co2_val), frequency = 12, method = "stl", s.window = 12) +
+  geom_line() + labs(x = "Year", y = "CO2 (ppm)")
+```
+
+
+---
+
+## How should we think about spatial data?
+
+Typically location is measured with __latitude__ / __longitude__ (2D)
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+- __Latitude__: Measures North / South (the "y-axis")
+
+  - Range is $(-90^{\circ}, 90^{\circ})$
+  
+  - Measures degrees from the equator $(0^{\circ})$
+  
+  - $(-90^{\circ}, 0^{\circ})$ = southern hemisphere 
+  
+  - $(0^{\circ}, 90^{\circ})$ = northern hemisphere 
+
+:::
+
+::: {.column width="50%"}
+
+- __Longitude__: Measures East/West (the "x-axis")
+
+  - Range is $(-180^{\circ}, 180^{\circ})$
+  
+  - Measures degrees from the prime meridian $(0^{\circ})$ in Greenwich, England
+  
+  - $(-180^{\circ}, 0^{\circ})$ = eastern hemisphere
+  
+  - $(0^{\circ}, 180^{\circ})$ = western hemisphere
+
+:::
+
+::::
+
+
+---
+
+## Latitude and Longitude
+
+
+```{r, echo = FALSE, fig.align='center', out.width="80%"}
+knitr::include_graphics("https://c.tadst.com/gfx/1200x630/longitude-and-latitude-simple.png?1")
+```
+
+---
+
+## Map Projections
+
+__Map projections__: Transformation of the lat / long coordinates on a sphere (the earth) to a 2D plane
+  
+- There are many different projections - each will distort the map in different ways.
+
+- The most common projections are:
+
+  - [Mercator](https://en.wikipedia.org/wiki/Mercator_projection)
+  
+  - [Robinson](https://en.wikipedia.org/wiki/Robinson_projection)
+  
+  - [Conic](http://www.geo.hunter.cuny.edu/~jochen/gtech201/lectures/lec6concepts/Map%20coordinate%20systems/Conic%20projections.htm#:~:text=Conic%20projections%20are%20created%20by,a%20developable%20map%20projection%20surface.)
+  
+  - [Cylindrical](https://en.wikipedia.org/wiki/Map_projection#Cylindrical)
+  
+  - [Planar](http://www.geo.hunter.cuny.edu/~jochen/gtech201/lectures/lec6concepts/Map%20coordinate%20systems/Planar%20projections.htm)
+  
+  - [Interrupted projections](https://en.wikipedia.org/wiki/Interruption_(map_projection))
+
+
+---
+
+## Mercator Projection (1500s)
+
+
+```{r, echo = FALSE, fig.align='center', out.width="60%"}
+knitr::include_graphics("https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Mercator_projection_Square.JPG/700px-Mercator_projection_Square.JPG")
+```
+
+
+---
+
+## Mercator Projection (Tissot indicatrix)
+
+
+```{r, echo = FALSE, fig.align='center', out.width="60%"}
+knitr::include_graphics("https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Mercator_with_Tissot%27s_Indicatrices_of_Distortion.svg/700px-Mercator_with_Tissot%27s_Indicatrices_of_Distortion.svg.png")
+```
+
+
+---
+
+## Robinson Projection (Standard from 1963-1998)
+
+```{r, echo = FALSE, fig.align='center', out.width="70%"}
+knitr::include_graphics("https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Robinson_projection_SW.jpg/700px-Robinson_projection_SW.jpg")
+```
+
+
+---
+
+## Robinson Projection (Tissot indicatrix)
+
+
+```{r, echo = FALSE, fig.align='center', out.width="70%"}
+knitr::include_graphics("https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Robinson_with_Tissot%27s_Indicatrices_of_Distortion.svg/700px-Robinson_with_Tissot%27s_Indicatrices_of_Distortion.svg.png")
+```
+
+
+---
+
+## Winkel Tripel Projection (proposed 1921, now the standard)
+
+```{r, echo = FALSE, fig.align='center', out.width="60%"}
+knitr::include_graphics("https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Winkel_triple_projection_SW.jpg/660px-Winkel_triple_projection_SW.jpg")
+```
+
+---
+
+## Winkel Tripel Projection (Tissot indicatrix)
+
+```{r, echo = FALSE, fig.align='center', out.width="60%"}
+knitr::include_graphics("https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Winkel_Tripel_with_Tissot%27s_Indicatrices_of_Distortion.svg/660px-Winkel_Tripel_with_Tissot%27s_Indicatrices_of_Distortion.svg.png")
+```
+
+---
+
+## And many more... (see [xkcd comic](https://xkcd.com/977/))
+
+```{r, echo = FALSE, fig.align='center', out.width="60%"}
+knitr::include_graphics("https://i.pinimg.com/originals/2d/03/cf/2d03cffa216afb23fa50fb07fc1221b1.jpg")
+```
+
+
+---
+
+## Visualizing spatial data on maps using [`ggmap`](https://cran.r-project.org/web/packages/ggmap/readme/README.html)
+
+```{r}
+#| output-location: slide
+#| fig-height: 6
+library(ggmap)
+# First, we'll draw a "box" around the US (in terms of latitude and longitude)
+US <- c(left = -125, bottom = 10, right = -67, top = 49)
+map <- get_stadiamap(US, zoom = 5, maptype = "stamen_toner_lite")
+
+# Visualize the basic map
+ggmap(map)
+```
+
+- Draw map based on lat / lon coordinates
+
+- Put the box into `get_stadiamap()` to access [Stamen Maps](http://maps.stamen.com/#terrain/12/37.7706/-122.3782) (__you need an API key!__)
+
+- Draw the map using `ggmap()` to serve as base
+
+
+---
+
+## Three main types of spatial data
+
+
+1. __Point Pattern Data__: lat-long coordinates where events have occurred
+
+2. __Point-Referenced data__: Latitude-longitude (lat-long) coordinates as well as one or more variables specific to those coordinates.
+
+3. __Areal Data__: Geographic regions with one or more variables associated with those regions.
+
+. . .
+
+- Each type is structured differently within a dataset
+
+- Each type requires a different kind of graph(s)
+
+. . .
+
+We're going to review each type of data. Then, we're going to demonstrate how to plot these different data types
+
++ __Today: Point-referenced and point pattern__
+
++ Monday: Areal data
+
+---
+
+## Point-Pattern data
+
+- __Point Pattern Data__: lat-long coordinates where events have occurred
+
+- __Point pattern data simply records the lat-long of events__; thus, there are only two columns
+
+- Again, latitude and longitude are represented with dots, sometimes called a dot or bubble map.
+
+. . .
+
+- The goal is to understand how the __density__ of events varies across space
+
+- The density of the dots can also be visualized (e.g., with contours)
+
+  - __Use methods we've discussed before for visualizing 2D joint distribution__
+
+
+---
+
+```{r, echo = FALSE, fig.align='center', out.width = "80%"}
+knitr::include_graphics("https://static01.nyt.com/images/2020/09/10/learning/TotalCovidMap-LN/TotalCovidMap-LN-superJumbo.png?quality=75&auto=webp")
+```
+
+
+---
+
+## Point-Referenced data
+
+- __Point-Referenced data__: Latitude-longitude (lat-long) coordinates as well as one or more variables specific to those coordinates
+
+- Point-referenced data will have the following form:
+
+```{r}
+airports |> dplyr::select(lat, lon, altitude, n_depart, n_arrive, name) |> slice(1:3)
+```
+
+. . .
+
+- The goal is to understand how the variable(s) (e.g., `altitude`) vary across different spatial locations
+
+- Typically, the latitude and longitude are represented with dots, and the variable(s) are represented with size and/or colors
+
+---
+
+## Adding points to the map as usual
+
+```{r}
+ggmap(map) +
+  geom_point(data = airports, aes(x = lon, y = lat), alpha = 0.25)
+```
+
+---
+
+## Altering points on the map (in the usual way)
+
+```{r}
+#| output-location: slide
+#| fig-height: 6
+ggmap(map) +
+  geom_point(data = airports, 
+             aes(x = lon, y = lat, 
+                 size = sqrt(n_depart), color = sqrt(n_arrive)),
+             alpha = .5) +
+  scale_size_area(breaks = sqrt(c(1, 5, 10, 50, 100, 500)), 
+                  labels = c(1, 5, 10, 50, 100, 500), 
+                  name = "# departures") +
+  scale_color_distiller(palette = "Spectral") +
+  labs(color = "sqrt(# arrivals)") +
+  theme(legend.position = "bottom")
+```
+
+
+---
+
+## Inference for Spatial Data
+
+There are whole courses, textbooks, and careers dedicated to this. We're not going to cover everything!
+
+However, there are some straightforward analyses that can be done for spatial data.
+
+**Point-Referenced Data:**
+
++ Divide geography into groups (e.g., north/south/east/west) and use regression to test if there are significant differences.
+
++ Regression of $\text{outcome} \sim \text{latitude} + \text{longitude}$. Smoothing regression (e.g., loess) is particularly useful here.
+
+---
+
+## Visualizing Inference for Point-Reference Data
+
+For basic linear regression:
+
+1. Plot $(x, y)$ as points
+
+2. Fit the regression model $y \sim x$, to give us  $\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 \cdot x$
+
+3. Plot $(x, \hat{y})$ as a line
+
+. . .
+
+For point reference data, we have the following variables:
+
++ Inputs are longitude $x$ and latitude $y$, and outcome variable is $z$
+
+Consider the following linear regression model: $z \sim \text{lat} + \text{long}$
+
+Goal: Make a visual involving $(\text{long}, \text{lat}, \hat{z})$, and possibly $z$.
+
+
+---
+
+## Kriging
+
+Goal: Make a visual involving (long, lat, $\hat{z}$) and possibly $z$
+
+Want $\hat{z}$ for many (long, lat) combos (not just the observed one!)
+
+To do this, follow this procedure:
+
+1. Fit the model $z \sim \text{lat} + \text{long}$
+
+2. Create a grid of $(\text{long}, \text{lat})_{ij}$
+
+3. Generate $\hat{z}_{ij}$ for each $(\text{long}, \text{lat})_{ij}$
+
+4. Plot a heat map or contour plot of (long, lat, $\hat{z}$)
+
++ You can also add the actual $z$ values (e.g., via size) on the heat map
+
+This is known as **kriging**, or _spatial interpolation_
+
+---
+
+## Kriging: airline data example
+
+
+```{r, echo = FALSE}
+airports_subset <- airports |>
+  filter(lat >= 10 & lat <= 49 & lon >= -125 & lon <= -67)
+ggmap(map) +
+  geom_point(data = airports_subset, 
+             aes(x = lon, y = lat, 
+                 size = sqrt(n_depart)), #<<
+             alpha = .5) +
+  scale_size_area(breaks = sqrt(c(1, 5, 10, 50, 100, 500)), 
+                  labels = c(expression(sqrt(1)), expression(sqrt(5)), 
+                             expression(sqrt(10)), expression(sqrt(50)),
+                             expression(sqrt(100)), expression(sqrt(500)))) +
+  labs(size = "sqrt(# departures)") +
+  theme(legend.title = element_text(size = 8))
+```
+
+---
+
+## Kriging: creating the map
+
+```{r, echo = FALSE}
+ggmap(map) 
+```
+
+
+---
+
+## Kriging: generating the grid
+
+
+```{r}
+#| echo: false
+loess_model <- loess(sqrt(n_depart) ~ lon * lat, data = airports_subset,
+                     control = loess.control(surface = "direct"))
+
+# Now we'll predict what the sqrt(n_depart) is for a grid of lat/long points.
+# This code creates a sequence of latitude and longitude points where
+# we want to predict/estimate what sqrt(n_depart) is:
+lat_grid <- seq(10, 49, by = 1)
+lon_grid <- seq(-125, -67, by = 2)
+
+# the following line creates a grid of the lat and long coordinates
+# (To better understand what this line is doing, it'd be helpful to
+# look at the help documentation for expand.grid, which is often used
+# in computational statistics. Note we named the columns to match the 
+# ones used for the model.)
+lonlat_grid <- expand.grid("lon" = lon_grid, 
+                           "lat" = lat_grid,
+                           # NOTE: We use the following input when using a 
+                           # grid input for the loess model - this ensures
+                           # that the predictions we get will be returned in 
+                           # a long column versus a grid (see what happens when
+                           # you comment out the following line for yourself)
+                           KEEP.OUT.ATTRS = FALSE)
+
+# predicted values of sqrt(n_depart) along the grid
+loess_pred <- predict(loess_model, lonlat_grid)
+
+# Now we need to attach these predicted values to the grid of points that we created earlier:
+loess_pred_tbl <- lonlat_grid |>
+  # Convert to tibble:
+  as_tibble() |>
+  # Add this column:
+  mutate(pred_n_depart = loess_pred)
+
+
+ggmap(map) +
+  geom_point(data = loess_pred_tbl, 
+             aes(x = lon, y = lat)) 
+```
+
+---
+
+
+## Kriging: generating predicted values
+
+
+```{r}
+#| echo: false
+ggmap(map) +
+  geom_point(data = loess_pred_tbl, 
+             aes(x = lon, y = lat, 
+                 color = loess_pred)) +
+  scale_color_distiller(palette = "Spectral") +
+  labs(color = "Estimated sqrt(# flights)") +
+  theme(legend.title = element_text(size = 8))
+```
+
+
+---
+
+## Kriging: plotting heat map of predicted values
+
+
+```{r}
+#| echo: false
+ggmap(map) +
+  geom_point(data = airports, 
+             aes(x = lon, y = lat, size = sqrt(n_depart)), 
+             alpha = .5) +
+  geom_contour_filled(data = loess_pred_tbl, binwidth = 1,
+                      aes(x = lon, y = lat, z = loess_pred, 
+                          color = after_stat(level)),
+                      alpha = 0.2) +
+  scale_size_area(breaks = sqrt(c(1, 5, 10, 50, 100, 500)), 
+                  labels = c(expression(sqrt(1)), expression(sqrt(5)), 
+                             expression(sqrt(10)), expression(sqrt(50)),
+                             expression(sqrt(100)), expression(sqrt(500)))) +
+  labs(size = "sqrt(# departures)", 
+       color = "level", fill = "level") +
+  theme(legend.title = element_text(size = 8))
+```
+
+
+---
+
+## Kriging overview
+
+
+The steps used to create this map are...
+
+1. Fit an interactive regression model using `loess()`
+
+2. Make a grid of lat/long coordinates, using `seq()` and `expand.grid()`
+
+3. Get estimated outcomes across the grid using `predict()`
+
+4. Use `geom_contour_filled()` to color map by estimated outcomes
+
+
+---
+
+## Recap and next steps
+
++ Walked through basics of time series data, such as moving averages, autocorrelation, seasonality
+
++ Visualized spatial data in a 2D plane (latitude/longitude), i.e., maps
+
+  + Point pattern: Scatterplots with density contours
+
+  + Point-referenced: Scatterplots with color/size, use regression/loess for inference
+
+. . .
+
++ **HW4 is due TONIGHT!** **Email me a draft of your EDA report!** (1 per group)
+
++ **Next time**: Visualizing areal data and creating high-quality graphics
+
++ [CW CH 13 Visualizing time series and other functions of an independent variable](https://clauswilke.com/dataviz/time-series.html), [CW CH 14 Visualizing trends](https://clauswilke.com/dataviz/visualizing-trends.html), [CW Chapter 15 Visualizing geospatial data](https://clauswilke.com/dataviz/geospatial-data.html), [KH Chapter 7 Draw Maps](https://socviz.co/maps.html#maps)
+
+
+
+
