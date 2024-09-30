@@ -11,8 +11,8 @@
   <meta name="generator" content="quarto-1.5.57">
 
   <meta name="author" content="Prof Ron Yurko">
-  <meta name="dcterms.date" content="2024-08-28">
-  <title>Data Visualization 36-613 Fall 24 – Principles and Visualizations for 1D Categorical Data</title>
+  <meta name="dcterms.date" content="2024-09-30">
+  <title>Data Visualization 36-613 Fall 24 – Areal data and creating high-quality graphics</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -394,7 +394,7 @@
     <div class="slides">
 
 <section id="title-slide" class="quarto-title-block center">
-  <h1 class="title">Principles and Visualizations for 1D Categorical Data</h1>
+  <h1 class="title">Areal data and creating high-quality graphics</h1>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
@@ -404,440 +404,399 @@ Prof Ron Yurko
 </div>
 </div>
 
-  <p class="date">2024-08-28</p>
+  <p class="date">2024-09-30</p>
 </section>
 <section id="reminders-previously-and-today" class="slide level2">
 <h2>Reminders, previously, and today…</h2>
 <ul>
-<li><p><strong>HW1 was UPDATED and is due next Wednesday - complete the GenAI Literacy module ON TIME!</strong></p></li>
-<li><p><strong>Complete HW0 by Thursday night!</strong> Confirms you have everything installed and can <a href="https://quarto.org/docs/output-formats/pdf-basics.html">render <code>.qmd</code> files to PDF via <code>tinytex</code></a></p></li>
+<li><p><strong>Infographic draft is due Wednesday night!</strong> (more details later today…)</p></li>
+<li><p><strong>Your EDA report is due Friday Oct 4th by 11:59 PM ET</strong> (1 per group)</p></li>
+<li><p><strong>No lecture on Wednesday! But I will have virtual office hours during class time</strong></p></li>
 </ul>
 <div class="fragment">
 <ul>
-<li><p>Walked through course logistics (<strong>READ THE SYLLABUS</strong>)</p></li>
-<li><p>Introduced the <strong>Grammar of Graphics</strong> and <code>ggplot2</code> basics</p></li>
+<li><p>Wrapped up basics of time series data</p></li>
+<li><p>Introduction to spatial data and the different types</p></li>
+<li><p>Walked through visualizing point-reference data</p></li>
 </ul>
 </div>
 <div class="fragment">
 <p><strong>TODAY:</strong></p>
 <ul>
-<li><p>Discuss data visualization principles and the role of infographics</p></li>
-<li><p>Visualizing categorical data (starting with 1D)</p></li>
+<li><p>Visualizations for areal data</p></li>
+<li><p>Discuss making high-quality graphics</p></li>
 </ul>
 </div>
 </section>
-<section id="in-the-beginning" class="slide level2">
-<h2>In the beginning…</h2>
-<div style="font-size: 80%;">
-<p><strong>Michael Florent van Langren published the first (known) statistical graphic in 1644</strong></p>
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="https://upload.wikimedia.org/wikipedia/commons/6/66/Grados_de_la_Longitud.jpg" class="quarto-figure quarto-figure-center" style="width:80.0%"></p>
-</figure>
+<section id="thinking-about-areal-data" class="slide level2">
+<h2>Thinking about areal data</h2>
+<ul>
+<li><p><strong>Areal Data</strong>: Geographic regions associated with one or more variables specific to those regions</p></li>
+<li><p>Areal data will have the following form (example US states data from 1970s):</p></li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a>state_data <span class="sc">|&gt;</span> dplyr<span class="sc">::</span><span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 9
+  Population Income Illiteracy `Life Exp` Murder `HS Grad` Frost   Area state  
+       &lt;dbl&gt;  &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  
+1       3615   3624        2.1       69.0   15.1      41.3    20  50708 alabama
+2        365   6315        1.5       69.3   11.3      66.7   152 566432 alaska 
+3       2212   4530        1.8       70.6    7.8      58.1    15 113417 arizona</code></pre>
+</div>
+</div>
+</section>
+<section id="high-level-overview-of-steps" class="slide level2">
+<h2>High-level overview of steps</h2>
+<ul>
+<li><p>Need to match the region with the actual geographic boundaries</p></li>
+<li><p>Many geographic boundaries/features are stored as “shapefiles”</p>
+<ul>
+<li>i.e., complicated polygons</li>
+</ul></li>
+<li><p>Can contain the lines, points, etc. to represent any geographic feature</p></li>
+<li><p>Shapefiles are readily available for countries, states, counties, etc.</p></li>
+</ul>
+</section>
+<section id="access-shapefiles-using-map_data" class="slide level2">
+<h2>Access shapefiles using <code>map_data()</code></h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a><span class="fu">library</span>(maps)</span>
+<span id="cb3-2"><a></a>state_borders <span class="ot">&lt;-</span> <span class="fu">map_data</span>(<span class="st">"state"</span>) </span>
+<span id="cb3-3"><a></a><span class="fu">head</span>(state_borders)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       long      lat group order  region subregion
+1 -87.46201 30.38968     1     1 alabama      &lt;NA&gt;
+2 -87.48493 30.37249     1     2 alabama      &lt;NA&gt;
+3 -87.52503 30.37249     1     3 alabama      &lt;NA&gt;
+4 -87.53076 30.33239     1     4 alabama      &lt;NA&gt;
+5 -87.57087 30.32665     1     5 alabama      &lt;NA&gt;
+6 -87.58806 30.32665     1     6 alabama      &lt;NA&gt;</code></pre>
+</div>
 </div>
 <ul>
-<li><p>Plots different estimates of the longitudinal distance between Toledo, Spain and Rome, Italy</p></li>
-<li><p>i.e., visualization of collected data to aid in estimation of parameter</p></li>
+<li><p>For example: <code>map_data("world")</code>, <code>map_data("state")</code>, <code>map_data("county")</code> (need to install <a href="https://cran.r-project.org/web/packages/maps/maps.pdf"><code>maps</code> package</a>)</p></li>
+<li><p>Contains lat/lon coordinates to draw geographic boundaries</p></li>
 </ul>
-</div>
-<div class="fragment">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDU0fPHI7y9TstYN0hASi7wlDcBUDnNoTS8yNjXehDAZVJ17glqqGBI7Wxt6y_wdgyyw&amp;usqp=CAU.png" class="quarto-figure quarto-figure-center" style="width:80.0%"></p>
-</figure>
-</div>
-</div>
 </section>
-<section id="john-snow-knows-something-about-cholera" class="slide level2">
-<h2><a href="https://www.theguardian.com/news/datablog/2013/mar/15/john-snow-cholera-map">John Snow</a> Knows Something About Cholera</h2>
-
-<img data-src="https://media.nationalgeographic.org/assets/photos/000/276/27636.jpg" class="quarto-figure quarto-figure-center r-stretch" style="width:80.0%"></section>
-<section id="charles-minards-map-of-napoleons-russian-disaster" class="slide level2">
-<h2><a href="https://www.datavis.ca/gallery/minard/minard.pdf">Charles Minard’s</a> Map of Napoleon’s Russian Disaster</h2>
-
-<img data-src="https://datavizblog.files.wordpress.com/2013/05/map-full-size1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:90.0%"></section>
-<section id="florence-nightingales-rose-diagram" class="slide level2">
-<h2><a href="https://www.datavis.ca/gallery/flo.php">Florence Nightingale’s</a> Rose Diagram</h2>
-
-<img data-src="https://daily.jstor.org/wp-content/uploads/2020/08/florence_nightingagle_data_visualization_visionary_1050x700.jpg" class="quarto-figure quarto-figure-center r-stretch" style="width:75.0%"></section>
-<section id="milestones-in-data-visualization-history" class="slide level2">
-<h2><a href="https://friendly.github.io/HistDataVis/">Milestones in Data Visualization History</a></h2>
-
-<img data-src="https://friendly.github.io/HistDataVis/figs-web/07_1-mileyears3.png" class="quarto-figure quarto-figure-center r-stretch" style="width:80.0%"></section>
-<section id="edward-tuftes-principles-of-data-visualization" class="slide level2">
-<h2><a href="https://www.edwardtufte.com/tufte/">Edward Tufte’s</a> Principles of Data Visualization</h2>
-<p><strong><em>Graphics</em></strong>: visually display measured quantities by combining points, lines, coordinate systems, numbers, symbols, words, shading, color</p>
-<p><strong><em>Often our goal is to show data and/or communicate a story</em></strong></p>
-<div class="fragment">
-<ul>
-<li><p>Induce viewer to think about substance, <strong>not graphical methodology</strong></p></li>
-<li><p>Make large, complex datasets more coherent</p></li>
-<li><p>Encourage comparison of different pieces of data</p></li>
-<li><p><strong>Describe, explore, and identify relationships</strong></p></li>
-<li><p><strong>Avoid data distortion and data decoration</strong></p></li>
-<li><p>Use consistent graph design</p></li>
-</ul>
-</div>
-<div class="fragment">
-<p><strong><em>Avoid graphs that lead to misleading conclusions!</em></strong></p>
-</div>
-</section>
-<section id="how-to-fail-this-class" class="slide level2">
-<h2>How to Fail this Class:</h2>
-
-<img data-src="https://socviz.co/assets/ch-01-chartjunk-life-expectancy.png" class="quarto-figure quarto-figure-center r-stretch" style="width:65.0%"></section>
-<section id="what-about-this-spiral" class="slide level2">
-<h2>What about this spiral?</h2>
-
-<img data-src="https://github.com/ryurko/SURE22-examples/blob/main/figures/lecture_examples/nyt_ex.png?raw=true" class="quarto-figure quarto-figure-center r-stretch" style="width:125.0%"><div class="fragment">
-<p><strong><em><a href="https://junkcharts.typepad.com/junk_charts/nyt/">Requires distortion</a></em></strong></p>
-</div>
-</section>
-<section id="infographics-to-communicate-a-story-check-out-flowingdata-for-more-examples" class="slide level2">
-<h2>Infographics to communicate a story (check out <a href="https://flowingdata.com/">FlowingData</a> for more examples)</h2>
-
-<img data-src="https://i0.wp.com/flowingdata.com/wp-content/uploads/2024/08/nba-players-at-olympics-sportradar-scaled-e1723395396398.jpeg?resize=1527%2C2048&amp;quality=89&amp;ssl=1" class="quarto-figure quarto-figure-center r-stretch" style="width:65.0%"></section>
-<section id="alberto-cairo-and-the-art-of-insight" class="slide level2">
-<h2><a href="https://www.albertocairo.com/">Alberto Cairo</a> and the art of insight</h2>
-
-<img data-src="https://academictechnologies.it.miami.edu/_assets/images/images/faculty-engagement/faculty-success-stories/1melgar-big.png" class="quarto-figure quarto-figure-center r-stretch" style="width:65.0%"></section>
-<section id="d-categorical-data" class="slide level2">
-<h2>1D Categorical Data</h2>
-<p>Two different versions of categorical:</p>
+<section id="typica-workflow-for-plotting-areal-data" class="slide level2">
+<h2>Typica workflow for plotting areal data</h2>
 <ol type="1">
-<li><strong>Nominal</strong>: coded with arbitrary numbers, i.e., no real order</li>
+<li><p>Get state-specific data</p></li>
+<li><p>Get state boundaries</p></li>
+<li><p>Merge state-specific data with state boundaries (using <code>left_join()</code>)</p></li>
 </ol>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a>state_plot_data <span class="ot">&lt;-</span> state_borders <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a></a>  <span class="fu">left_join</span>(state_data, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"region"</span> <span class="ot">=</span> <span class="st">"state"</span>))</span>
+<span id="cb5-3"><a></a><span class="fu">head</span>(state_plot_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       long      lat group order  region subregion Population Income Illiteracy
+1 -87.46201 30.38968     1     1 alabama      &lt;NA&gt;       3615   3624        2.1
+2 -87.48493 30.37249     1     2 alabama      &lt;NA&gt;       3615   3624        2.1
+3 -87.52503 30.37249     1     3 alabama      &lt;NA&gt;       3615   3624        2.1
+4 -87.53076 30.33239     1     4 alabama      &lt;NA&gt;       3615   3624        2.1
+5 -87.57087 30.32665     1     5 alabama      &lt;NA&gt;       3615   3624        2.1
+6 -87.58806 30.32665     1     6 alabama      &lt;NA&gt;       3615   3624        2.1
+  Life Exp Murder HS Grad Frost  Area
+1    69.05   15.1    41.3    20 50708
+2    69.05   15.1    41.3    20 50708
+3    69.05   15.1    41.3    20 50708
+4    69.05   15.1    41.3    20 50708
+5    69.05   15.1    41.3    20 50708
+6    69.05   15.1    41.3    20 50708</code></pre>
+</div>
+</div>
+<ol start="4" type="1">
+<li>Plot the data</li>
+</ol>
+</section>
+<section id="create-a-choropleth-map-with-geom_polygon" class="slide level2">
+<h2>Create a choropleth map with <code>geom_polygon()</code></h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a>state_plot_data <span class="sc">|&gt;</span></span>
+<span id="cb7-2"><a></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb7-3"><a></a>  <span class="fu">geom_polygon</span>(<span class="fu">aes</span>(<span class="at">x =</span> long, <span class="at">y =</span> lat, <span class="at">group =</span> group, <span class="at">fill =</span> Illiteracy), </span>
+<span id="cb7-4"><a></a>               <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span> </span>
+<span id="cb7-5"><a></a>  <span class="fu">scale_fill_gradient2</span>(<span class="at">low =</span> <span class="st">"darkgreen"</span>, <span class="at">mid =</span> <span class="st">"lightgrey"</span>, </span>
+<span id="cb7-6"><a></a>                       <span class="at">high =</span> <span class="st">"darkorchid4"</span>, <span class="at">midpoint =</span> <span class="fl">0.95</span>) <span class="sc">+</span></span>
+<span id="cb7-7"><a></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
+<span id="cb7-8"><a></a>  <span class="fu">coord_map</span>(<span class="st">"polyconic"</span>) <span class="sc">+</span> </span>
+<span id="cb7-9"><a></a>  <span class="fu">labs</span>(<span class="at">fill =</span> <span class="st">"Illiteracy %"</span>) <span class="sc">+</span> </span>
+<span id="cb7-10"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+</section>
+<section id="create-a-choropleth-map-with-geom_polygon-output" class="slide level2 output-location-slide"><h2>Create a choropleth map with <code>geom_polygon()</code></h2><div class="cell output-location-slide" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-5-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
+</figure>
+</div>
+</div>
+</div></section><section id="uniform-size-with-statebins" class="slide level2">
+<h2>Uniform size with <a href="https://github.com/hrbrmstr/statebins"><code>statebins</code></a></h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a><span class="fu">library</span>(statebins)</span>
+<span id="cb8-2"><a></a>state_data<span class="sc">$</span>new_state <span class="ot">&lt;-</span> <span class="fu">str_to_title</span>(state_data<span class="sc">$</span>state)</span>
+<span id="cb8-3"><a></a><span class="fu">statebins</span>(<span class="at">state_data =</span> state_data, </span>
+<span id="cb8-4"><a></a>          <span class="at">state_col =</span> <span class="st">"new_state"</span>, <span class="at">value_col =</span> <span class="st">"Illiteracy"</span>) <span class="sc">+</span></span>
+<span id="cb8-5"><a></a>  <span class="fu">theme_statebins</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-6-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="many-choices-for-displaying-maps" class="slide level2">
+<h2>Many choices for displaying maps…</h2>
+
+<img data-src="https://socviz.co/assets/ch-07-election-county-share.png" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="visual-randomization-test" class="slide level2">
+<h2>Visual randomization test</h2>
+
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-8-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="visual-randomization-test-1" class="slide level2">
+<h2>Visual randomization test</h2>
+
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-9-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="infographics-draft-and-feedback-assignment" class="slide level2">
+<h2>Infographics draft and feedback assignment</h2>
 <ul>
-<li>Examples: race, gender, species, text</li>
+<li><p><strong>You turn in via Gradescope and email a single page PDF draft of your infographic to your assigned partner with myself cc’ed</strong> by 11:59 PM Wednesday night (no code is necessary for this draft)</p></li>
+<li><p>For only this draft submission, you are allowed to use something like google slides or powerpoint to create your draft PDF</p></li>
+<li><p>Detailed grading rubric for your final submission (due Oct 11th by 11:59 PM ET) is posted on Canvas</p></li>
 </ul>
 <div class="fragment">
+<ul>
+<li><p><strong>You must provide feedback to your assigned infographics partner via email (see emails I sent this morning) by Saturday night 11:59 PM ET and turn in via Gradescope as well</strong></p></li>
+<li><p>Feedback template is available on Canvas (and is 10% of your grade!)</p></li>
+</ul>
+</div>
+</section>
+<section id="creating-compound-figures" class="slide level2">
+<h2>Creating compound figures</h2>
+<p>Two different scenarios we may face:</p>
+<ol type="1">
+<li>Creating the same type of plot many times</li>
+</ol>
+<ul>
+<li>e.g., using <code>facet_wrap()</code> or <code>facet_grid()</code></li>
+</ul>
 <ol start="2" type="1">
-<li><strong>Ordinal</strong>: levels with a meaningful order</li>
+<li>Combining several distinct plots into one cohesive display</li>
 </ol>
 <ul>
-<li>Examples: education level, grades, ranks</li>
-</ul>
-</div>
-<div class="fragment">
-<p><strong>NOTE</strong>: <code>R</code> and <code>ggplot</code> considers a categorical variable to be <code>factor</code></p>
-<ul>
-<li><p><code>R</code> will always treat categorical variables as ordinal! Defaults to alphabetical…</p></li>
-<li><p>We will need to manually define the <code>factor</code> levels</p></li>
-</ul>
-</div>
-</section>
-<section id="d-categorical-data-structure" class="slide level2">
-<h2>1D categorical data structure</h2>
-<ul>
-<li><p>Observations are collected into a vector <span class="math inline">\((x_1, \dots, x_n)\)</span>, where <span class="math inline">\(n\)</span> is number of observations</p></li>
-<li><p>Each observed value <span class="math inline">\(x_i\)</span> can only belong to one category level <span class="math inline">\(\{ C_1, C_2, \dots \}\)</span></p></li>
-</ul>
-<div class="fragment">
-<p>Look at <code>penguins</code> data from the <a href="https://allisonhorst.github.io/palmerpenguins/"><code>palmerpenguins</code></a> package, focusing on <code>species</code>:</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a><span class="fu">library</span>(palmerpenguins)</span>
-<span id="cb1-2"><a></a><span class="fu">head</span>(penguins<span class="sc">$</span>species)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] Adelie Adelie Adelie Adelie Adelie Adelie
-Levels: Adelie Chinstrap Gentoo</code></pre>
-</div>
-</div>
-<p><strong><em>How could we summarize these data? What information would you report?</em></strong></p>
-</div>
-<div class="fragment">
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a><span class="fu">table</span>(penguins<span class="sc">$</span>species)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-   Adelie Chinstrap    Gentoo 
-      152        68       124 </code></pre>
-</div>
-</div>
-</div>
-</section>
-<section id="area-plots" class="slide level2">
-<h2>Area plots</h2>
-
-<img data-src="https://clauswilke.com/dataviz/directory_of_visualizations_files/figure-html/proportions-1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:65.0%"><ul>
-<li><p>Each area corresponds to one categorical level</p></li>
-<li><p>Area is proportional to counts/frequencies/percentages</p></li>
-<li><p>Differences between areas correspond to differences between counts/frequencies/percentages</p></li>
+<li>e.g., using flexible arrangement packages like <a href="https://cran.r-project.org/web/packages/cowplot/vignettes/introduction.html"><code>cowplot</code></a> or <a href="https://patchwork.data-imaginist.com/index.html"><code>patchwork</code></a></li>
 </ul>
 </section>
-<section id="bar-charts" class="slide level2">
-<h2>Bar charts</h2>
+<section id="creating-the-same-type-of-plot-many-times" class="slide level2">
+<h2>Creating the same type of plot many times</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb5" data-code-line-numbers="3-4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb5-2"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb5-3"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species)) <span class="sc">+</span></span>
-<span id="cb5-4"><a></a>  <span class="fu">geom_bar</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a></a>penguins <span class="sc">|&gt;</span></span>
+<span id="cb9-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> flipper_length_mm, <span class="at">y =</span> body_mass_g)) <span class="sc">+</span></span>
+<span id="cb9-3"><a></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb9-4"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>species) <span class="sc">+</span></span>
+<span id="cb9-5"><a></a>  <span class="fu">theme_light</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-4-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
-<section id="behind-the-scenes-statistical-summaries" class="slide level2">
-<h2>Behind the scenes: statistical summaries</h2>
-
-<img data-src="https://d33wubrfki0l68.cloudfront.net/70a3b18a1128c785d8676a48c005ee9b6a23cc00/7283c/images/visualization-stat-bar.png" class="quarto-figure quarto-figure-center r-stretch" style="width:65.0%"><p>From <a href="https://r4ds.had.co.nz/data-visualisation.html">Chapter 3 of R for Data Science</a></p>
-</section>
-<section id="spine-charts---height-version" class="slide level2">
-<h2>Spine charts - height version</h2>
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-10-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="creating-the-same-type-of-plot-many-times-1" class="slide level2">
+<h2>Creating the same type of plot many times</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb6" data-code-line-numbers="2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb6-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> species, <span class="at">x =</span> <span class="st">""</span>)) <span class="sc">+</span></span>
-<span id="cb6-3"><a></a>  <span class="fu">geom_bar</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a></a>penguins <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> flipper_length_mm, <span class="at">y =</span> body_mass_g)) <span class="sc">+</span></span>
+<span id="cb10-3"><a></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb10-4"><a></a>  <span class="fu">facet_grid</span>(island <span class="sc">~</span> species) <span class="sc">+</span></span>
+<span id="cb10-5"><a></a>  <span class="fu">theme_light</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-5-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
-<section id="spine-charts---width-version" class="slide level2">
-<h2>Spine charts - width version</h2>
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-11-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="creating-a-single-cohesive-display-of-multiple-plots" class="slide level2">
+<h2>Creating a single cohesive display of multiple plots</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7" data-code-line-numbers="4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb7-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> species, <span class="at">x =</span> <span class="st">""</span>)) <span class="sc">+</span></span>
-<span id="cb7-3"><a></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span></span>
-<span id="cb7-4"><a></a>  <span class="fu">coord_flip</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a></a>plot1 <span class="ot">&lt;-</span> penguins <span class="sc">|&gt;</span></span>
+<span id="cb11-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> flipper_length_mm, <span class="at">y =</span> body_mass_g)) <span class="sc">+</span></span>
+<span id="cb11-3"><a></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>)</span>
+<span id="cb11-4"><a></a>plot1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-6-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
-<section id="what-does-a-bar-chart-show" class="slide level2">
-<h2>What does a bar chart show?</h2>
-<p><strong>Marginal Distribution</strong></p>
-<ul>
-<li><p>Assume categorical variable <span class="math inline">\(X\)</span> has <span class="math inline">\(K\)</span> categories: <span class="math inline">\(C_1, \dots, C_K\)</span></p></li>
-<li><p><strong>True</strong> marginal distribution of <span class="math inline">\(X\)</span>:</p></li>
-</ul>
-<p><span class="math display">\[
-P(X = C_j) = p_j,\ j \in \{ 1, \dots, K \}
-\]</span></p>
-<div class="fragment">
-<p><strong>We have access to the Empirical Marginal Distribution</strong></p>
-<ul>
-<li>Observed distribution of <span class="math inline">\(X\)</span>, our best estimate (MLE) of the marginal distribution of <span class="math inline">\(X\)</span>: <span class="math inline">\(\hat{p}_1\)</span>, <span class="math inline">\(\hat{p}_2\)</span>, <span class="math inline">\(\dots\)</span>, <span class="math inline">\(\hat{p}_K\)</span></li>
-</ul>
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-12-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="creating-a-single-cohesive-display-of-multiple-plots-1" class="slide level2">
+<h2>Creating a single cohesive display of multiple plots</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a><span class="fu">table</span>(penguins<span class="sc">$</span>species) <span class="sc">/</span> <span class="fu">nrow</span>(penguins)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-   Adelie Chinstrap    Gentoo 
-0.4418605 0.1976744 0.3604651 </code></pre>
-</div>
-</div>
-</div>
-</section>
-<section id="bar-charts-with-proportions" class="slide level2">
-<h2>Bar charts with proportions</h2>
-<ul>
-<li><p><a href="https://ggplot2.tidyverse.org/reference/aes_eval.html"><code>after_stat()</code></a> indicates the aesthetic mapping is performed after statistical transformation</p></li>
-<li><p>Use <code>after_stat(count)</code> to access the <code>stat_count()</code> called by <code>geom_bar()</code></p></li>
-</ul>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb10" data-code-line-numbers="3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb10-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species)) <span class="sc">+</span></span>
-<span id="cb10-3"><a></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">after_stat</span>(count) <span class="sc">/</span> <span class="fu">sum</span>(<span class="fu">after_stat</span>(count)))) <span class="sc">+</span> </span>
-<span id="cb10-4"><a></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"Proportion"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a></a>plot2 <span class="ot">&lt;-</span> penguins <span class="sc">|&gt;</span></span>
+<span id="cb12-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species, <span class="at">y =</span> bill_depth_mm)) <span class="sc">+</span></span>
+<span id="cb12-3"><a></a>  <span class="fu">geom_violin</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>)</span>
+<span id="cb12-4"><a></a>plot2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-8-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
-<section id="compute-and-display-the-proportions-directly" class="slide level2">
-<h2>Compute and display the proportions directly</h2>
-<ul>
-<li><p>Use <code>group_by()</code>, <code>summarize()</code>, and <code>mutate()</code> in a pipeline to compute then display the proportions directly</p></li>
-<li><p>Need to indicate we are displaying the <code>y</code> axis as given, i.e., the identity function</p></li>
-</ul>
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-13-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="using-cowplot-to-arrange-plots-together" class="slide level2">
+<h2>Using <a href="https://cran.r-project.org/web/packages/cowplot/vignettes/introduction.html"><code>cowplot</code></a> to arrange plots together</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb11" data-code-line-numbers="2-5,7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb11-2"><a></a>  <span class="fu">group_by</span>(species) <span class="sc">|&gt;</span> </span>
-<span id="cb11-3"><a></a>  <span class="fu">summarize</span>(<span class="at">count =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb11-4"><a></a>  <span class="fu">mutate</span>(<span class="at">total =</span> <span class="fu">sum</span>(count), </span>
-<span id="cb11-5"><a></a>         <span class="at">prop =</span> count <span class="sc">/</span> total) <span class="sc">|&gt;</span> </span>
-<span id="cb11-6"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species)) <span class="sc">+</span></span>
-<span id="cb11-7"><a></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> prop), <span class="at">stat =</span> <span class="st">"identity"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb13-2"><a></a><span class="fu">plot_grid</span>(plot1, plot2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-14-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="using-cowplot-to-arrange-plots-together-1" class="slide level2">
+<h2>Using <a href="https://cran.r-project.org/web/packages/cowplot/vignettes/introduction.html"><code>cowplot</code></a> to arrange plots together</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb14-2"><a></a><span class="fu">plot_grid</span>(plot1, plot2, <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">'A'</span>, <span class="st">'B'</span>), <span class="at">label_size =</span> <span class="dv">12</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-15-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="using-patchwork-to-arrange-plots-together" class="slide level2">
+<h2>Using <a href="https://patchwork.data-imaginist.com/index.html"><code>patchwork</code></a> to arrange plots together</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb15-2"><a></a>plot1 <span class="sc">+</span> plot2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-16-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="using-patchwork-to-arrange-plots-together-1" class="slide level2">
+<h2>Using <a href="https://patchwork.data-imaginist.com/index.html"><code>patchwork</code></a> to arrange plots together</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a></a>plot1 <span class="sc">/</span> plot2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-17-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="using-patchwork-to-arrange-plots-together-2" class="slide level2">
+<h2>Using <a href="https://patchwork.data-imaginist.com/index.html"><code>patchwork</code></a> to arrange plots together</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a></a>plot1 <span class="sc">/</span> plot2 <span class="sc">+</span> <span class="fu">plot_annotation</span>(<span class="at">tag_levels =</span> <span class="st">"A"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-18-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="using-patchwork-to-arrange-plots-together-3" class="slide level2">
+<h2>Using <a href="https://patchwork.data-imaginist.com/index.html"><code>patchwork</code></a> to arrange plots together</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a></a>plot3 <span class="ot">&lt;-</span> penguins <span class="sc">|&gt;</span></span>
+<span id="cb18-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length_mm, <span class="at">y =</span> bill_depth_mm,</span>
+<span id="cb18-3"><a></a>             <span class="at">color =</span> species)) <span class="sc">+</span></span>
+<span id="cb18-4"><a></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>)</span>
+<span id="cb18-5"><a></a>plot4 <span class="ot">&lt;-</span> penguins <span class="sc">|&gt;</span></span>
+<span id="cb18-6"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length_mm, <span class="at">y =</span> body_mass_g,</span>
+<span id="cb18-7"><a></a>             <span class="at">color =</span> species)) <span class="sc">+</span></span>
+<span id="cb18-8"><a></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>)</span>
+<span id="cb18-9"><a></a>(plot1 <span class="sc">+</span> plot2) <span class="sc">/</span> (plot3 <span class="sc">+</span> plot4) <span class="sc">+</span> <span class="fu">plot_layout</span>(<span class="at">guides =</span> <span class="st">'collect'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 </section>
-<section id="compute-and-display-the-proportions-directly-output" class="slide level2 output-location-slide"><h2>Compute and display the proportions directly</h2><div class="cell output-location-slide" data-layout-align="center">
+<section id="using-patchwork-to-arrange-plots-together-3-output" class="slide level2 output-location-slide"><h2>Using <a href="https://patchwork.data-imaginist.com/index.html"><code>patchwork</code></a> to arrange plots together</h2><div class="cell output-location-slide" data-layout-align="center">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-9-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
+<p><img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-19-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
 </figure>
 </div>
 </div>
-</div></section><section id="what-about-uncertainty" class="slide level2">
-<h2>What about uncertainty?</h2>
+</div></section><section id="using-patchwork-to-arrange-plots-together-4" class="slide level2">
+<h2>Using <a href="https://patchwork.data-imaginist.com/index.html"><code>patchwork</code></a> to arrange plots together</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a></a>(plot1 <span class="sc">+</span> plot2) <span class="sc">/</span> (plot3 <span class="sc">+</span> plot4) <span class="sc">+</span> <span class="fu">plot_layout</span>(<span class="at">guides =</span> <span class="st">'collect'</span>) <span class="sc">+</span></span>
+<span id="cb19-2"><a></a>  <span class="fu">plot_annotation</span>(<span class="at">tag_levels =</span> <span class="st">"A"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-20-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="using-patchwork-to-arrange-plots-together-5" class="slide level2">
+<h2>Using <a href="https://patchwork.data-imaginist.com/index.html"><code>patchwork</code></a> to arrange plots together</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a></a>(plot1 <span class="sc">+</span> plot2) <span class="sc">/</span> (plot3 <span class="sc">+</span> plot4) <span class="sc">+</span> <span class="fu">plot_layout</span>(<span class="at">guides =</span> <span class="st">'collect'</span>) <span class="sc">+</span></span>
+<span id="cb20-2"><a></a>  <span class="fu">plot_annotation</span>(<span class="at">tag_levels =</span> <span class="st">"A"</span>, <span class="at">title =</span> <span class="st">"A plot about penguins"</span>,</span>
+<span id="cb20-3"><a></a>                  <span class="at">subtitle =</span> <span class="st">"With subtitle..."</span>, <span class="at">caption =</span> <span class="st">"...and caption"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-21-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="infographics-vs-figures-in-papersreports" class="slide level2">
+<h2>Infographics vs figures in papers/reports</h2>
 <ul>
-<li>Quantify uncertainty for our estimate <span class="math inline">\(\hat{p}_j = \frac{n_j}{n}\)</span> with the <strong>standard error</strong>:</li>
+<li>Infographics should standalone, thus <strong>they must have a title along with a relevant subtitle and caption</strong> (located within the plot)</li>
 </ul>
-<p><span class="math display">\[
-SE(\hat{p}_j) = \sqrt{\frac{\hat{p}_j(1 - \hat{p}_j)}{n}}
-\]</span></p>
+
+<img data-src="https://clauswilke.com/dataviz/figure_titles_captions_files/figure-html/corruption-development-infographic-1.png" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="infographics-vs-figures-in-papersreports-1" class="slide level2">
+<h2>Infographics vs figures in papers/reports</h2>
+<ul>
+<li>Figures in papers/reports will have captions containing the information from the standalone title/subtitle/caption, see example:</li>
+</ul>
+
+<img data-src="https://clauswilke.com/dataviz/figure_titles_captions_files/figure-html/corruption-development-1.png" class="r-stretch quarto-figure-center"><p class="caption">Figure 1. <strong>Corruption and human development.</strong> The most developed countries experience the least corruption. Data sources: Transparency International &amp; UN Human Development Report.</p></section>
+<section id="thinking-about-themes" class="slide level2">
+<h2>Thinking about themes…</h2>
+<p><strong>See posted demo walking through color scales and customizing themes</strong></p>
+<p>Default choices tend to treat each element with <strong>equal weight</strong>, e.g., axes stand out as much as the data or background elements look the same as the points of emphasis</p>
 <div class="fragment">
+<p>You want to design your plot with the <strong>visual hierarchy</strong> in mind:</p>
 <ul>
-<li><p>Compute <span class="math inline">\(\alpha\)</span>-level <strong>confidence interval</strong> (CI) as <span class="math inline">\(\hat{p}_j \pm z_{1 - \alpha / 2} \cdot SE(\hat{p}_j)\)</span></p></li>
-<li><p>Good rule-of-thumb: construct 95% CI using <span class="math inline">\(\hat{p}_j \pm 2 \cdot SE(\hat{p}_j)\)</span></p></li>
-<li><p>Approximation justified by CLT, so CI could include values outside of [0,1]</p></li>
+<li><p>Make elements of your plot that are more important <strong>look more important!</strong></p></li>
+<li><p>i.e., customize your plot so that the data is the focus, not the axes and grid lines!</p></li>
+<li><p>Match visual weight to focus of the graphic you want to communicate</p></li>
 </ul>
 </div>
+<div class="fragment">
+<p>I tend to use <code>theme_bw()</code> or <code>theme_light()</code>, but there are other options from various packages such as <a href="https://jrnold.github.io/ggthemes/"><code>ggthemes</code></a></p>
+</div>
 </section>
-<section id="add-standard-errors-to-bars" class="slide level2">
-<h2>Add standard errors to bars</h2>
+<section id="using-patchwork-to-arrange-plots-together-6" class="slide level2">
+<h2>Using <a href="https://patchwork.data-imaginist.com/index.html"><code>patchwork</code></a> to arrange plots together</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a></a>(plot1 <span class="sc">+</span> plot2) <span class="sc">/</span> (plot3 <span class="sc">+</span> plot4) <span class="sc">+</span> <span class="fu">plot_layout</span>(<span class="at">guides =</span> <span class="st">'collect'</span>) <span class="sc">+</span></span>
+<span id="cb21-2"><a></a>  <span class="fu">plot_annotation</span>(<span class="at">tag_levels =</span> <span class="st">"A"</span>, <span class="at">title =</span> <span class="st">"A plot about penguins"</span>,</span>
+<span id="cb21-3"><a></a>                  <span class="at">subtitle =</span> <span class="st">"With subtitle..."</span>, <span class="at">caption =</span> <span class="st">"...and caption"</span>) <span class="sc">&amp;</span> </span>
+<span id="cb21-4"><a></a>  <span class="fu">theme_minimal_grid</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-24-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="annotation" class="slide level2">
+<h2>Annotation</h2>
 <ul>
-<li><p>Need to remember each CI is for each <span class="math inline">\(\hat{p}_j\)</span> marginally, <strong>not</strong> jointly</p></li>
-<li><p>Have to be careful with <strong>multiple testing</strong></p></li>
+<li><p>Using text can be a great way to highlight and explain aspects of a visualization when <strong>you’re not there to explain it</strong></p></li>
+<li><p><a href="https://ggplot2.tidyverse.org/reference/annotate.html"><code>annotate()</code></a> is an easy way to add text to ggplot objects or add rectangle layers for highlighting displays</p></li>
 </ul>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb12" data-code-line-numbers="6-8,11-12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb12-2"><a></a>  <span class="fu">group_by</span>(species) <span class="sc">|&gt;</span> </span>
-<span id="cb12-3"><a></a>  <span class="fu">summarize</span>(<span class="at">count =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb12-4"><a></a>  <span class="fu">mutate</span>(<span class="at">total =</span> <span class="fu">sum</span>(count), </span>
-<span id="cb12-5"><a></a>         <span class="at">prop =</span> count <span class="sc">/</span> total,</span>
-<span id="cb12-6"><a></a>         <span class="at">se =</span> <span class="fu">sqrt</span>(prop <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> prop) <span class="sc">/</span> total), </span>
-<span id="cb12-7"><a></a>         <span class="at">lower =</span> prop <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> se, </span>
-<span id="cb12-8"><a></a>         <span class="at">upper =</span> prop <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> se) <span class="sc">|&gt;</span> </span>
-<span id="cb12-9"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species)) <span class="sc">+</span></span>
-<span id="cb12-10"><a></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> prop), <span class="at">stat =</span> <span class="st">"identity"</span>) <span class="sc">+</span></span>
-<span id="cb12-11"><a></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> lower, <span class="at">ymax =</span> upper), </span>
-<span id="cb12-12"><a></a>                <span class="at">color =</span> <span class="st">"red"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-
-</section>
-<section id="add-standard-errors-to-bars-output" class="slide level2 output-location-slide"><h2>Add standard errors to bars</h2><div class="cell output-location-slide" data-layout-align="center">
-<div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-10-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
-</figure>
-</div>
-</div>
-</div></section><section id="why-does-this-matter" class="slide level2">
-<h2>Why does this matter?</h2>
-<div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a></a>mtcars <span class="sc">|&gt;</span></span>
+<span id="cb22-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> wt, <span class="at">y =</span> mpg)) <span class="sc">+</span> </span>
+<span id="cb22-3"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb22-4"><a></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="dv">4</span>, <span class="at">y =</span> <span class="dv">25</span>, <span class="at">label =</span> <span class="st">"Some text"</span>) <span class="sc">+</span></span>
+<span id="cb22-5"><a></a>  <span class="fu">annotate</span>(<span class="st">"rect"</span>, <span class="at">xmin =</span> <span class="dv">3</span>, <span class="at">xmax =</span> <span class="fl">4.2</span>, <span class="at">ymin =</span> <span class="dv">12</span>, <span class="at">ymax =</span> <span class="dv">21</span>, <span class="at">alpha =</span> .<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<div class="cell quarto-layout-panel" data-layout-align="center" data-layout-ncol="2">
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-11-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
-</figure>
-</div>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-11-2.png" class="quarto-figure quarto-figure-center" width="960"></p>
-</figure>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="graphs-can-appear-the-same-with-very-different-statistical-conclusions---mainly-due-to-sample-size" class="slide level2">
-<h2>Graphs can appear the same with very different statistical conclusions - mainly due to sample size</h2>
-<div>
-
-</div>
-<div class="cell quarto-layout-panel" data-layout-align="center" data-layout-ncol="2">
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-12-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
-</figure>
-</div>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-12-2.png" class="quarto-figure quarto-figure-center" width="960"></p>
-</figure>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="useful-to-order-categories-by-frequency-with-forcats" class="slide level2">
-<h2>Useful to order categories by frequency with <a href="https://forcats.tidyverse.org/"><code>forcats</code></a></h2>
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-25-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="annotation-tools" class="slide level2">
+<h2>Annotation tools</h2>
+<ul>
+<li>We’ve discussed <a href="https://cran.r-project.org/web/packages/gghighlight/vignettes/gghighlight.html"><code>gghighlight</code></a> and <a href="https://cran.r-project.org/web/packages/ggrepel/vignettes/ggrepel.html"><code>ggrepel</code></a>, but <a href="https://tdhock.github.io/directlabels/"><code>directlabels</code></a> and <a href="https://ggforce.data-imaginist.com/index.html"><code>ggforce</code></a> are also useful</li>
+</ul>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb13" data-code-line-numbers="9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb13-2"><a></a>  <span class="fu">group_by</span>(species) <span class="sc">|&gt;</span> </span>
-<span id="cb13-3"><a></a>  <span class="fu">summarize</span>(<span class="at">count =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb13-4"><a></a>  <span class="fu">mutate</span>(<span class="at">total =</span> <span class="fu">sum</span>(count), </span>
-<span id="cb13-5"><a></a>         <span class="at">prop =</span> count <span class="sc">/</span> total,</span>
-<span id="cb13-6"><a></a>         <span class="at">se =</span> <span class="fu">sqrt</span>(prop <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> prop) <span class="sc">/</span> total), </span>
-<span id="cb13-7"><a></a>         <span class="at">lower =</span> prop <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> se, </span>
-<span id="cb13-8"><a></a>         <span class="at">upper =</span> prop <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> se,</span>
-<span id="cb13-9"><a></a>         <span class="at">species =</span> <span class="fu">fct_reorder</span>(species, prop)) <span class="sc">|&gt;</span></span>
-<span id="cb13-10"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species)) <span class="sc">+</span></span>
-<span id="cb13-11"><a></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> prop), <span class="at">stat =</span> <span class="st">"identity"</span>) <span class="sc">+</span></span>
-<span id="cb13-12"><a></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> lower, <span class="at">ymax =</span> upper), </span>
-<span id="cb13-13"><a></a>                <span class="at">color =</span> <span class="st">"red"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a></a><span class="fu">library</span>(ggforce)</span>
+<span id="cb23-2"><a></a><span class="fu">ggplot</span>(iris, <span class="fu">aes</span>(Petal.Length, Petal.Width)) <span class="sc">+</span></span>
+<span id="cb23-3"><a></a>  <span class="fu">geom_mark_rect</span>(<span class="fu">aes</span>(<span class="at">fill =</span> Species, <span class="at">label =</span> Species)) <span class="sc">+</span></span>
+<span id="cb23-4"><a></a>  <span class="fu">geom_point</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
+</div>
+<img data-src="10-areal-data-creating-graphics_files/figure-revealjs/unnamed-chunk-26-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="saving-plots" class="slide level2">
+<h2>Saving plots</h2>
+<ul>
+<li><p>Default function for saving the last ggplot you created is <a href="https://ggplot2.tidyverse.org/reference/ggsave.html"><code>ggsave</code></a></p></li>
+<li><p>I tend to use the <a href="https://wilkelab.org/cowplot/reference/save_plot.html"><code>save_plot()</code></a> function from <a href="https://wilkelab.org/cowplot/index.html"><code>cowplot</code></a> since it has easier customization for handling panels of multiple figures</p></li>
+</ul>
 </section>
-<section id="useful-to-order-categories-by-frequency-with-forcats-output" class="slide level2 output-location-slide"><h2>Useful to order categories by frequency with <a href="https://forcats.tidyverse.org/"><code>forcats</code></a></h2><div class="cell output-location-slide" data-layout-align="center">
-<div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-13-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
-</figure>
-</div>
-</div>
-</div></section><section id="so-you-want-to-make-pie-charts" class="slide level2">
-<h2>So you want to make pie charts…</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb14" data-code-line-numbers="2-5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a></a>penguins <span class="sc">|&gt;</span> </span>
-<span id="cb14-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> species, <span class="at">x =</span> <span class="st">""</span>)) <span class="sc">+</span> </span>
-<span id="cb14-3"><a></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">after_stat</span>(count))) <span class="sc">+</span></span>
-<span id="cb14-4"><a></a>  <span class="fu">coord_polar</span>(<span class="at">theta =</span> <span class="st">"y"</span>) <span class="sc">+</span></span>
-<span id="cb14-5"><a></a>  <span class="fu">theme_void</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-14-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
-<section id="friends-dont-let-friends-make-pie-charts" class="slide level2">
-<h2><a href="https://github.com/cxli233/FriendsDontLetFriends">Friends Don’t Let Friends Make Pie Charts</a></h2>
-
-<img data-src="https://raw.githubusercontent.com/cxli233/FriendsDontLetFriends/9267fcbb0e5db5a95c2cf624db3c53b50d6ee2fb/Results/dont_pie_chart.svg" class="quarto-figure quarto-figure-center r-stretch" style="width:80.0%"></section>
-<section id="waffle-charts-are-cooler-anyway" class="slide level2">
-<h2><a href="https://github.com/hrbrmstr/waffle">Waffle charts</a> are cooler anyway…</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a></a><span class="fu">library</span>(waffle)</span>
-<span id="cb15-2"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb15-3"><a></a>  <span class="fu">group_by</span>(species) <span class="sc">|&gt;</span> </span>
-<span id="cb15-4"><a></a>  <span class="fu">summarize</span>(<span class="at">count =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb15-5"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> species, <span class="at">values =</span> count)) <span class="sc">+</span></span>
-<span id="cb15-6"><a></a>  <span class="fu">geom_waffle</span>(<span class="at">n_rows =</span> <span class="dv">20</span>, <span class="at">color =</span> <span class="st">"white"</span>, <span class="at">flip =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
-<span id="cb15-7"><a></a>  <span class="fu">coord_equal</span>() <span class="sc">+</span></span>
-<span id="cb15-8"><a></a>  <span class="fu">theme_void</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-15-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
 <section id="recap-and-next-steps" class="slide level2">
 <h2>Recap and next steps</h2>
 <ul>
-<li><p>Discussed basic principles of data visualization and walked through variety of examples</p></li>
-<li><p>Visualize categorical data with bars!</p></li>
-<li><p>Display uncertainty with standard errors</p></li>
-</ul>
-<div class="fragment">
-<ul>
-<li><p><strong>HW1 is due next Wednesday - complete GenAI module ON TIME!</strong></p></li>
-<li><p><strong>Complete HW0 by Thursday night!</strong> Confirms you have everything installed and can <a href="https://quarto.org/docs/output-formats/pdf-basics.html">render <code>.qmd</code> files to PDF via <code>tinytex</code></a></p></li>
-</ul>
-</div>
-<div class="fragment">
-<ul>
-<li><p><strong>Next time</strong>: Visualizing 2D categorical and 1D quantitative data</p></li>
-<li><p>Recommended reading:</p>
-<ul>
-<li><a href="https://clauswilke.com/dataviz/visualizing-proportions.html">CW Chapter 10 Visualizing proportions</a>, <a href="https://clauswilke.com/dataviz/visualizing-uncertainty.html#visualizing-the-uncertainty-of-point-estimates">CW Chapter 16.2 Visualizing the uncertainty of point estimates</a>, <a href="https://clauswilke.com/dataviz/nested-proportions.html">CW Chapter 11 Visualizing nested proportions</a></li>
-</ul></li>
+<li><p>Walked through basics of visualizing areal data</p></li>
+<li><p>Discussed various aspects of making high-quality graphics and relevant tools</p></li>
+<li><p><strong>No lecture on Wednesday! But I will have virtual office hours during class time</strong></p></li>
+<li><p><strong>Infographic draft is due Wednesday night!</strong></p></li>
+<li><p><strong>Your EDA report is due Friday Oct 4th by 11:59 PM ET</strong> (1 per group)</p></li>
+<li><p><a href="https://socviz.co/maps.html#maps">KH Chapter 7 Draw Maps</a>, <a href="https://cran.r-project.org/web/packages/biscale/index.html">creating bivariate choropleths</a>, <a href="https://clauswilke.com/dataviz/multi-panel-figures.html">CW Chapter 21 Multi-panel figures</a>, <a href="https://clauswilke.com/dataviz/balance-data-context.html">CW Chapter 23 Balance the data and the context</a>, <a href="https://socviz.co/refineplots.html#change-the-appearance-of-plots-with-themes">KH Chapter 8 Refine your plots</a></p></li>
 </ul>
 
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 <p><a href="https://ryurko.github.io/mads-36613-fall24/">mads-36613-fall24</a></p>
-</div>
 </div>
 </div>
 </section>
