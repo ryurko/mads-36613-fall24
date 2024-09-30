@@ -1,0 +1,504 @@
+---
+title: "Areal data and creating high-quality graphics"
+author: "Prof Ron Yurko"
+footer:  "[mads-36613-fall24](https://ryurko.github.io/mads-36613-fall24/)"
+date: 2024-09-30
+engine: knitr
+format:
+  revealjs:
+    theme: theme.scss
+    chalkboard: true
+    pdf-separate-fragments: true
+    slide-number: c/t
+    smaller: true
+    code-line-numbers: true
+    linestretch: 1.25
+    html-math-method:
+      method: mathjax
+      url: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+---
+
+```{r}
+#| include: false
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center"
+)
+
+library(tidyverse)
+library(datasets)
+state_names <- rownames(state.x77)
+state_data <- as_tibble(state.x77)
+state_data <- state_data |>
+  mutate(state = state_names) |>
+  mutate(state = tolower(state))
+library(palmerpenguins)
+```
+
+## Reminders, previously, and today...
+
++ **Infographic draft is due Wednesday night!** (more details later today...) 
+
++ **Your EDA report is due Friday Oct 4th by 11:59 PM ET** (1 per group)
+
++ **No lecture on Wednesday! But I will have virtual office hours during class time**
+
+. . .
+
++ Wrapped up basics of time series data
+
++ Introduction to spatial data and the different types
+
++ Walked through visualizing point-reference data
+
+. . .
+
+**TODAY:**
+
++ Visualizations for areal data
+
++ Discuss making high-quality graphics
+
+
+---
+
+## Thinking about areal data
+
+- __Areal Data__: Geographic regions associated with one or more variables specific to those regions
+
+- Areal data will have the following form (example US states data from 1970s):
+
+```{r}
+state_data |> dplyr::slice(1:3)
+```
+
+---
+
+## High-level overview of steps
+
+- Need to match the region with the actual geographic boundaries
+
+- Many geographic boundaries/features are stored as "shapefiles"
+
+  - i.e., complicated polygons
+  
+- Can contain the lines, points, etc. to represent any geographic feature
+
+- Shapefiles are readily available for countries, states, counties, etc.
+
+
+---
+
+## Access shapefiles using `map_data()` 
+
+```{r}
+library(maps)
+state_borders <- map_data("state") 
+head(state_borders)
+```
+
+- For example: `map_data("world")`, `map_data("state")`, `map_data("county")` (need to install [`maps` package](https://cran.r-project.org/web/packages/maps/maps.pdf))
+
+- Contains lat/lon coordinates to draw geographic boundaries
+
+---
+
+## Typica workflow for plotting areal data
+
+  1. Get state-specific data
+  
+  2. Get state boundaries
+  
+  3. Merge state-specific data with state boundaries (using `left_join()`)
+  
+```{r}
+state_plot_data <- state_borders |>
+  left_join(state_data, by = c("region" = "state"))
+head(state_plot_data)
+```
+  
+  
+  4. Plot the data
+
+---
+
+## Create a choropleth map with `geom_polygon()`
+
+```{r}
+#| output-location: slide
+state_plot_data |>
+  ggplot() + 
+  geom_polygon(aes(x = long, y = lat, group = group, fill = Illiteracy), 
+               color = "black") + 
+  scale_fill_gradient2(low = "darkgreen", mid = "lightgrey", 
+                       high = "darkorchid4", midpoint = 0.95) +
+  theme_void() +
+  coord_map("polyconic") + 
+  labs(fill = "Illiteracy %") + 
+  theme(legend.position = "bottom")
+```
+
+
+---
+
+## Uniform size with [`statebins`](https://github.com/hrbrmstr/statebins)
+
+```{r}
+library(statebins)
+state_data$new_state <- str_to_title(state_data$state)
+statebins(state_data = state_data, 
+          state_col = "new_state", value_col = "Illiteracy") +
+  theme_statebins()
+```
+
+---
+
+## Many choices for displaying maps...
+
+```{r, echo = FALSE, fig.align='center'}
+knitr::include_graphics("https://socviz.co/assets/ch-07-election-county-share.png")
+```
+
+---
+
+## Visual randomization test
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+get_state_map_illit <- function(state_data){
+  plot <- ggplot(state_data) + 
+    geom_polygon(aes(x = long, y = lat, group = group,
+                     fill = Illiteracy), color = "black") +
+    scale_fill_gradient2(low = "darkgreen", mid = "lightgrey", 
+                         high = "darkorchid4", midpoint = 0.95) +
+    theme_void() +
+    coord_map("polyconic")
+  return(plot)
+}
+
+# Now we're going to permute (i.e., "shuffle") the outcomes a few times. 
+# number of randomizations/permutations/shuffles:
+n_shuffles <- 9
+
+plot_list <- list(length = n_shuffles)
+# Will use a for loop to do this
+for(i in 1:n_shuffles){
+  #create a "randomized" dataset
+  state_borders_rand <- state_plot_data
+  #shuffle the outcomes
+  state_borders_rand$Illiteracy <- sample(state_borders_rand$Illiteracy)
+  #create the plot and store it
+  plot_list[[i]] = get_state_map_illit(state_borders_rand)
+}
+
+# pick a random entry of plot_list to be the "real" plot
+plot_list[[sample(1:n_shuffles, size = 1)]] = get_state_map_illit(state_plot_data)
+
+# Plot all the plots together using the cowplot package:
+# install.packages("cowplot")
+library(cowplot)
+plot_grid(plotlist = plot_list, ncol = 3)
+```
+
+
+---
+
+## Visual randomization test
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+# Grab the legend for just the first plot, since they are all the same
+map_legend <- get_legend(plot_list[[1]])
+legend_free_plot_list <- 
+  lapply(1:length(plot_list),
+         function(i) plot_list[[i]] + theme(legend.position = "none"))
+plot_grid(
+  plot_grid(plotlist = legend_free_plot_list, ncol = 3),
+  map_legend, ncol = 2,
+  # Adjust so the maps are much larger:
+  rel_widths = c(4, 1)
+)
+```
+
+
+
+---
+
+## Infographics draft and feedback assignment
+
++ **You turn in via Gradescope and email a single page PDF draft of your infographic to your assigned partner with myself cc'ed** by 11:59 PM Wednesday night (no code is necessary for this draft)
+
++ For only this draft submission, you are allowed to use something like google slides or powerpoint to create your draft PDF
+
++ Detailed grading rubric for your final submission (due Oct 11th by 11:59 PM ET) is posted on Canvas
+
+. . .
+
++ **You must provide feedback to your assigned infographics partner via email (see emails I sent this morning) by Saturday night 11:59 PM ET and turn in via Gradescope as well**
+
++ Feedback template is available on Canvas (and is 10% of your grade!)
+
+---
+
+## Creating compound figures
+
+Two different scenarios we may face:
+
+1. Creating the same type of plot many times
+
++ e.g., using `facet_wrap()` or `facet_grid()`
+
+2. Combining several distinct plots into one cohesive display
+
++ e.g., using flexible arrangement packages like [`cowplot`](https://cran.r-project.org/web/packages/cowplot/vignettes/introduction.html) or [`patchwork`](https://patchwork.data-imaginist.com/index.html)
+
+---
+
+## Creating the same type of plot many times
+
+```{r}
+penguins |>
+  ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(alpha = 0.5) +
+  facet_wrap(~species) +
+  theme_light()
+```
+
+
+---
+
+## Creating the same type of plot many times
+
+```{r}
+penguins |>
+  ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(alpha = 0.5) +
+  facet_grid(island ~ species) +
+  theme_light()
+```
+
+
+---
+
+## Creating a single cohesive display of multiple plots
+
+```{r}
+plot1 <- penguins |>
+  ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(alpha = 0.5)
+plot1
+```
+
+
+---
+
+## Creating a single cohesive display of multiple plots
+
+```{r}
+plot2 <- penguins |>
+  ggplot(aes(x = species, y = bill_depth_mm)) +
+  geom_violin(alpha = 0.5)
+plot2
+```
+
+
+---
+
+## Using [`cowplot`](https://cran.r-project.org/web/packages/cowplot/vignettes/introduction.html) to arrange plots together
+
+```{r}
+library(cowplot)
+plot_grid(plot1, plot2)
+```
+
+---
+
+## Using [`cowplot`](https://cran.r-project.org/web/packages/cowplot/vignettes/introduction.html) to arrange plots together
+
+```{r}
+library(cowplot)
+plot_grid(plot1, plot2, labels = c('A', 'B'), label_size = 12)
+```
+
+
+---
+
+## Using [`patchwork`](https://patchwork.data-imaginist.com/index.html) to arrange plots together
+
+```{r}
+library(patchwork)
+plot1 + plot2
+```
+
+---
+
+## Using [`patchwork`](https://patchwork.data-imaginist.com/index.html) to arrange plots together
+
+```{r}
+plot1 / plot2
+```
+
+
+---
+
+## Using [`patchwork`](https://patchwork.data-imaginist.com/index.html) to arrange plots together
+
+```{r}
+plot1 / plot2 + plot_annotation(tag_levels = "A")
+```
+
+---
+
+## Using [`patchwork`](https://patchwork.data-imaginist.com/index.html) to arrange plots together
+
+```{r}
+#| output-location: slide
+plot3 <- penguins |>
+  ggplot(aes(x = bill_length_mm, y = bill_depth_mm,
+             color = species)) +
+  geom_point(alpha = 0.5)
+plot4 <- penguins |>
+  ggplot(aes(x = bill_length_mm, y = body_mass_g,
+             color = species)) +
+  geom_point(alpha = 0.5)
+(plot1 + plot2) / (plot3 + plot4) + plot_layout(guides = 'collect')
+```
+
+
+---
+
+## Using [`patchwork`](https://patchwork.data-imaginist.com/index.html) to arrange plots together
+
+```{r}
+(plot1 + plot2) / (plot3 + plot4) + plot_layout(guides = 'collect') +
+  plot_annotation(tag_levels = "A")
+```
+
+---
+
+## Using [`patchwork`](https://patchwork.data-imaginist.com/index.html) to arrange plots together
+
+```{r}
+(plot1 + plot2) / (plot3 + plot4) + plot_layout(guides = 'collect') +
+  plot_annotation(tag_levels = "A", title = "A plot about penguins",
+                  subtitle = "With subtitle...", caption = "...and caption")
+```
+
+---
+
+## Infographics vs figures in papers/reports
+
++ Infographics should standalone, thus **they must have a title along with a relevant subtitle and caption** (located within the plot)
+
+```{r, echo = FALSE, fig.align='center'}
+knitr::include_graphics("https://clauswilke.com/dataviz/figure_titles_captions_files/figure-html/corruption-development-infographic-1.png")
+```
+
+
+---
+
+## Infographics vs figures in papers/reports
+
++ Figures in papers/reports will have captions containing the information from the standalone title/subtitle/caption, see example:
+
+```{r, echo = FALSE, fig.align='center'}
+#| fig-cap: "Figure 1. **Corruption and human development.** The most developed countries experience the least corruption. Data sources: Transparency International & UN Human Development Report."
+knitr::include_graphics("https://clauswilke.com/dataviz/figure_titles_captions_files/figure-html/corruption-development-1.png")
+```
+
+---
+
+## Thinking about themes...
+
+**See posted demo walking through color scales and customizing themes**
+
+Default choices tend to treat each element with **equal weight**, e.g., axes stand out as much as the data or background elements look the same as the points of emphasis
+
+. . .
+
+You want to design your plot with the **visual hierarchy** in mind:
+
++ Make elements of your plot that are more important **look more important!**
+
++ i.e., customize your plot so that the data is the focus, not the axes and grid lines!
+
++ Match visual weight to focus of the graphic you want to communicate
+
+. . .
+
+I tend to use `theme_bw()` or `theme_light()`, but there are other options from various packages such as [`ggthemes`](https://jrnold.github.io/ggthemes/)
+
+---
+
+## Using [`patchwork`](https://patchwork.data-imaginist.com/index.html) to arrange plots together
+
+```{r}
+(plot1 + plot2) / (plot3 + plot4) + plot_layout(guides = 'collect') +
+  plot_annotation(tag_levels = "A", title = "A plot about penguins",
+                  subtitle = "With subtitle...", caption = "...and caption") & 
+  theme_minimal_grid()
+```
+
+---
+
+## Annotation
+
++ Using text can be a great way to highlight and explain aspects of a visualization when **you're not there to explain it**
+
++ [`annotate()`](https://ggplot2.tidyverse.org/reference/annotate.html) is an easy way to add text to ggplot objects or add rectangle layers for highlighting displays
+
+```{r}
+mtcars |>
+  ggplot(aes(x = wt, y = mpg)) + 
+  geom_point() + 
+  annotate("text", x = 4, y = 25, label = "Some text") +
+  annotate("rect", xmin = 3, xmax = 4.2, ymin = 12, ymax = 21, alpha = .2)
+```
+
+---
+
+## Annotation tools
+
++ We've discussed [`gghighlight`](https://cran.r-project.org/web/packages/gghighlight/vignettes/gghighlight.html) and [`ggrepel`](https://cran.r-project.org/web/packages/ggrepel/vignettes/ggrepel.html), but [`directlabels`](https://tdhock.github.io/directlabels/) and [`ggforce`](https://ggforce.data-imaginist.com/index.html) are also useful
+
+```{r}
+library(ggforce)
+ggplot(iris, aes(Petal.Length, Petal.Width)) +
+  geom_mark_rect(aes(fill = Species, label = Species)) +
+  geom_point()
+```
+
+
+---
+
+## Saving plots
+
++ Default function for saving the last ggplot you created is [`ggsave`](https://ggplot2.tidyverse.org/reference/ggsave.html)
+
++ I tend to use the [`save_plot()`](https://wilkelab.org/cowplot/reference/save_plot.html) function from [`cowplot`](https://wilkelab.org/cowplot/index.html) since it has easier customization for handling panels of multiple figures
+
+---
+
+## Recap and next steps
+
++ Walked through basics of visualizing areal data
+
++ Discussed various aspects of making high-quality graphics and relevant tools
+
++ **No lecture on Wednesday! But I will have virtual office hours during class time**
+
++ **Infographic draft is due Wednesday night!** 
+
++ **Your EDA report is due Friday Oct 4th by 11:59 PM ET** (1 per group)
+
++ [KH Chapter 7 Draw Maps](https://socviz.co/maps.html#maps), [creating bivariate choropleths](https://cran.r-project.org/web/packages/biscale/index.html), [CW Chapter 21 Multi-panel figures](https://clauswilke.com/dataviz/multi-panel-figures.html), [CW Chapter 23 Balance the data and the context](https://clauswilke.com/dataviz/balance-data-context.html), [KH Chapter 8 Refine your plots](https://socviz.co/refineplots.html#change-the-appearance-of-plots-with-themes)
+
+
+
+

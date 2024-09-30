@@ -13,4 +13,5 @@ title: "Lectures"
 | 7         | Sept 18 | High-Dimensional Data  | [slides](lectures/07-highdim-methods.qmd)  |
 | 8         | Sept 23 | t-SNE + visualizing trends and time series data  | [slides](lectures/08-tsne-trends-time-series.qmd)  |
 | 9         | Sept 25 | Time series and intro to spatial data  | [slides](lectures/09-time-series-intro-spatial.qmd)  |
+| 10        | Sept 30 | Areal data and creating high-quality graphics  | [slides](lectures/10-areal-data-creating-graphics.qmd)  |
 
