@@ -11,8 +11,8 @@
   <meta name="generator" content="quarto-1.5.57">
 
   <meta name="author" content="Prof Ron Yurko">
-  <meta name="dcterms.date" content="2024-08-28">
-  <title>Data Visualization 36-613 Fall 24 – Principles and Visualizations for 1D Categorical Data</title>
+  <meta name="dcterms.date" content="2024-10-07">
+  <title>Data Visualization 36-613 Fall 24 – Visualizations for text data</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -394,7 +394,7 @@
     <div class="slides">
 
 <section id="title-slide" class="quarto-title-block center">
-  <h1 class="title">Principles and Visualizations for 1D Categorical Data</h1>
+  <h1 class="title">Visualizations for text data</h1>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
@@ -404,434 +404,475 @@ Prof Ron Yurko
 </div>
 </div>
 
-  <p class="date">2024-08-28</p>
+  <p class="date">2024-10-07</p>
 </section>
 <section id="reminders-previously-and-today" class="slide level2">
 <h2>Reminders, previously, and today…</h2>
 <ul>
-<li><p><strong>HW1 was UPDATED and is due next Wednesday - complete the GenAI Literacy module ON TIME!</strong></p></li>
-<li><p><strong>Complete HW0 by Thursday night!</strong> Confirms you have everything installed and can <a href="https://quarto.org/docs/output-formats/pdf-basics.html">render <code>.qmd</code> files to PDF via <code>tinytex</code></a></p></li>
+<li><p><strong>Infographic is due Friday night!</strong></p></li>
+<li><p>You should be working on your presentations for Jamie…</p></li>
 </ul>
 <div class="fragment">
 <ul>
-<li><p>Walked through course logistics (<strong>READ THE SYLLABUS</strong>)</p></li>
-<li><p>Introduced the <strong>Grammar of Graphics</strong> and <code>ggplot2</code> basics</p></li>
+<li><p>Walked through basics of visualizing areal data</p></li>
+<li><p>Discussed various aspects of making high-quality graphics and relevant tools</p></li>
+<li><p>Completed drafts and provided feedback to each other</p></li>
 </ul>
 </div>
 <div class="fragment">
 <p><strong>TODAY:</strong></p>
 <ul>
-<li><p>Discuss data visualization principles and the role of infographics</p></li>
-<li><p>Visualizing categorical data (starting with 1D)</p></li>
+<li><p>Introduction to text data</p></li>
+<li><p>Overview of common visualizations for text data</p></li>
 </ul>
 </div>
 </section>
-<section id="in-the-beginning" class="slide level2">
-<h2>In the beginning…</h2>
-<div style="font-size: 80%;">
-<p><strong>Michael Florent van Langren published the first (known) statistical graphic in 1644</strong></p>
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="https://upload.wikimedia.org/wikipedia/commons/6/66/Grados_de_la_Longitud.jpg" class="quarto-figure quarto-figure-center" style="width:80.0%"></p>
-</figure>
-</div>
+<section id="working-with-raw-text-data" class="slide level2">
+<h2>Working with raw text data</h2>
 <ul>
-<li><p>Plots different estimates of the longitudinal distance between Toledo, Spain and Rome, Italy</p></li>
-<li><p>i.e., visualization of collected data to aid in estimation of parameter</p></li>
+<li><p>We’ll work with script from the best episode of <a href="https://en.wikipedia.org/wiki/Dinner_Party_(The_Office)">‘The Office’: Season 4, Episode 13 - ‘Dinner Party’</a></p></li>
+<li><p>We can access the script using the <a href="https://cran.r-project.org/web/packages/schrute/vignettes/theoffice.html"><code>schrute</code> package (yes this is a real thing)</a>:</p></li>
 </ul>
-</div>
-<div class="fragment">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDU0fPHI7y9TstYN0hASi7wlDcBUDnNoTS8yNjXehDAZVJ17glqqGBI7Wxt6y_wdgyyw&amp;usqp=CAU.png" class="quarto-figure quarto-figure-center" style="width:80.0%"></p>
-</figure>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a><span class="fu">library</span>(schrute)</span>
+<span id="cb1-2"><a></a><span class="co"># Create a table from this package just corresponding to the Dinner Party episode:</span></span>
+<span id="cb1-3"><a></a>dinner_party_table <span class="ot">&lt;-</span> theoffice <span class="sc">|&gt;</span></span>
+<span id="cb1-4"><a></a>  <span class="fu">filter</span>(season <span class="sc">==</span> <span class="dv">4</span>, episode <span class="sc">==</span> <span class="dv">13</span>) <span class="sc">|&gt;</span></span>
+<span id="cb1-5"><a></a>  <span class="co"># Just select columns of interest:</span></span>
+<span id="cb1-6"><a></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(index, character, text)</span>
+<span id="cb1-7"><a></a><span class="fu">head</span>(dinner_party_table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 3
+  index character text                                                          
+  &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;                                                         
+1 16791 Stanley   This is ridiculous.                                           
+2 16792 Phyllis   Do you have any idea what time we'll get out of here?         
+3 16793 Michael   Nobody likes to work late, least of all me. Do you have plans…
+4 16794 Jim       Nope I don't, remember when you told us not to make plans 'ca…
+5 16795 Michael   Yes I remember. Mmm, this is B.S. This is B.S. Why are we her…
+6 16796 Dwight    Thank you Michael.                                            </code></pre>
 </div>
 </div>
 </section>
-<section id="john-snow-knows-something-about-cholera" class="slide level2">
-<h2><a href="https://www.theguardian.com/news/datablog/2013/mar/15/john-snow-cholera-map">John Snow</a> Knows Something About Cholera</h2>
-
-<img data-src="https://media.nationalgeographic.org/assets/photos/000/276/27636.jpg" class="quarto-figure quarto-figure-center r-stretch" style="width:80.0%"></section>
-<section id="charles-minards-map-of-napoleons-russian-disaster" class="slide level2">
-<h2><a href="https://www.datavis.ca/gallery/minard/minard.pdf">Charles Minard’s</a> Map of Napoleon’s Russian Disaster</h2>
-
-<img data-src="https://datavizblog.files.wordpress.com/2013/05/map-full-size1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:90.0%"></section>
-<section id="florence-nightingales-rose-diagram" class="slide level2">
-<h2><a href="https://www.datavis.ca/gallery/flo.php">Florence Nightingale’s</a> Rose Diagram</h2>
-
-<img data-src="https://daily.jstor.org/wp-content/uploads/2020/08/florence_nightingagle_data_visualization_visionary_1050x700.jpg" class="quarto-figure quarto-figure-center r-stretch" style="width:75.0%"></section>
-<section id="milestones-in-data-visualization-history" class="slide level2">
-<h2><a href="https://friendly.github.io/HistDataVis/">Milestones in Data Visualization History</a></h2>
-
-<img data-src="https://friendly.github.io/HistDataVis/figs-web/07_1-mileyears3.png" class="quarto-figure quarto-figure-center r-stretch" style="width:80.0%"></section>
-<section id="edward-tuftes-principles-of-data-visualization" class="slide level2">
-<h2><a href="https://www.edwardtufte.com/tufte/">Edward Tufte’s</a> Principles of Data Visualization</h2>
-<p><strong><em>Graphics</em></strong>: visually display measured quantities by combining points, lines, coordinate systems, numbers, symbols, words, shading, color</p>
-<p><strong><em>Often our goal is to show data and/or communicate a story</em></strong></p>
-<div class="fragment">
+<section id="bag-of-words-representation-of-text" class="slide level2">
+<h2>Bag of Words representation of text</h2>
 <ul>
-<li><p>Induce viewer to think about substance, <strong>not graphical methodology</strong></p></li>
-<li><p>Make large, complex datasets more coherent</p></li>
-<li><p>Encourage comparison of different pieces of data</p></li>
-<li><p><strong>Describe, explore, and identify relationships</strong></p></li>
-<li><p><strong>Avoid data distortion and data decoration</strong></p></li>
-<li><p>Use consistent graph design</p></li>
+<li>Most common way to store text data is with a <strong>document-term matrix</strong> (DTM):</li>
 </ul>
-</div>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th></th>
+<th>Word 1</th>
+<th>Word 2</th>
+<th><span class="math inline">\(\dots\)</span></th>
+<th>Word <span class="math inline">\(J\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Document 1</td>
+<td><span class="math inline">\(w_{11}\)</span></td>
+<td><span class="math inline">\(w_{12}\)</span></td>
+<td><span class="math inline">\(\dots\)</span></td>
+<td><span class="math inline">\(w_{1J}\)</span></td>
+</tr>
+<tr class="even">
+<td>Document 2</td>
+<td><span class="math inline">\(w_{21}\)</span></td>
+<td><span class="math inline">\(w_{22}\)</span></td>
+<td><span class="math inline">\(\dots\)</span></td>
+<td><span class="math inline">\(w_{2J}\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\dots\)</span></td>
+<td><span class="math inline">\(\dots\)</span></td>
+<td><span class="math inline">\(\dots\)</span></td>
+<td><span class="math inline">\(\dots\)</span></td>
+<td><span class="math inline">\(\dots\)</span></td>
+</tr>
+<tr class="even">
+<td>Document N</td>
+<td><span class="math inline">\(w_{N1}\)</span></td>
+<td><span class="math inline">\(w_{N2}\)</span></td>
+<td><span class="math inline">\(\dots\)</span></td>
+<td><span class="math inline">\(w_{NJ}\)</span></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><span class="math inline">\(w_{ij}\)</span>: count of word <span class="math inline">\(j\)</span> in document <span class="math inline">\(i\)</span>, aka <em>term frequencies</em></li>
+</ul>
 <div class="fragment">
-<p><strong><em>Avoid graphs that lead to misleading conclusions!</em></strong></p>
-</div>
-</section>
-<section id="how-to-fail-this-class" class="slide level2">
-<h2>How to Fail this Class:</h2>
-
-<img data-src="https://socviz.co/assets/ch-01-chartjunk-life-expectancy.png" class="quarto-figure quarto-figure-center r-stretch" style="width:65.0%"></section>
-<section id="what-about-this-spiral" class="slide level2">
-<h2>What about this spiral?</h2>
-
-<img data-src="https://github.com/ryurko/SURE22-examples/blob/main/figures/lecture_examples/nyt_ex.png?raw=true" class="quarto-figure quarto-figure-center r-stretch" style="width:125.0%"><div class="fragment">
-<p><strong><em><a href="https://junkcharts.typepad.com/junk_charts/nyt/">Requires distortion</a></em></strong></p>
-</div>
-</section>
-<section id="infographics-to-communicate-a-story-check-out-flowingdata-for-more-examples" class="slide level2">
-<h2>Infographics to communicate a story (check out <a href="https://flowingdata.com/">FlowingData</a> for more examples)</h2>
-
-<img data-src="https://i0.wp.com/flowingdata.com/wp-content/uploads/2024/08/nba-players-at-olympics-sportradar-scaled-e1723395396398.jpeg?resize=1527%2C2048&amp;quality=89&amp;ssl=1" class="quarto-figure quarto-figure-center r-stretch" style="width:65.0%"></section>
-<section id="alberto-cairo-and-the-art-of-insight" class="slide level2">
-<h2><a href="https://www.albertocairo.com/">Alberto Cairo</a> and the art of insight</h2>
-
-<img data-src="https://academictechnologies.it.miami.edu/_assets/images/images/faculty-engagement/faculty-success-stories/1melgar-big.png" class="quarto-figure quarto-figure-center r-stretch" style="width:65.0%"></section>
-<section id="d-categorical-data" class="slide level2">
-<h2>1D Categorical Data</h2>
-<p>Two different versions of categorical:</p>
+<p>Two additional ways to reduce number of columns:</p>
 <ol type="1">
-<li><strong>Nominal</strong>: coded with arbitrary numbers, i.e., no real order</li>
+<li><p><strong>Stop words</strong>: remove extremely common words (e.g., of, the, a)</p></li>
+<li><p><strong>Stemming</strong>: Reduce all words to their “stem”</p></li>
 </ol>
 <ul>
-<li>Examples: race, gender, species, text</li>
+<li>For example: Reducing = reduc. Reduce = reduc. Reduces = reduc.</li>
+</ul>
+</div>
+</section>
+<section id="tokenize-text-into-long-format" class="slide level2">
+<h2>Tokenize text into long format</h2>
+<ul>
+<li><p>Convert raw text into long, tidy table with one-token-per-document-per-row</p>
+<ul>
+<li>A <strong>token</strong> equals a unit of text - typically a word</li>
+</ul></li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a><span class="fu">library</span>(tidytext)</span>
+<span id="cb3-2"><a></a>tidy_dinner_party_tokens <span class="ot">&lt;-</span> dinner_party_table <span class="sc">|&gt;</span></span>
+<span id="cb3-3"><a></a>  <span class="fu">unnest_tokens</span>(word, text)</span>
+<span id="cb3-4"><a></a><span class="fu">head</span>(tidy_dinner_party_tokens)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 3
+  index character word      
+  &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;     
+1 16791 Stanley   this      
+2 16791 Stanley   is        
+3 16791 Stanley   ridiculous
+4 16792 Phyllis   do        
+5 16792 Phyllis   you       
+6 16792 Phyllis   have      </code></pre>
+</div>
+</div>
+<p>Easy to convert text into DTM format using <a href="https://cran.r-project.org/web/packages/tidytext/vignettes/tidytext.html"><code>tidytext</code> package</a></p>
+</section>
+<section id="remove-stop-words" class="slide level2">
+<h2>Remove stop words</h2>
+<ul>
+<li>Load <code>stop_words</code> from <code>tidytext</code></li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a><span class="fu">data</span>(stop_words)</span>
+<span id="cb5-2"><a></a></span>
+<span id="cb5-3"><a></a>tidy_dinner_party_tokens <span class="ot">&lt;-</span> tidy_dinner_party_tokens <span class="sc">|&gt;</span></span>
+<span id="cb5-4"><a></a>  <span class="fu">filter</span>(<span class="sc">!</span>(word <span class="sc">%in%</span> stop_words<span class="sc">$</span>word))</span>
+<span id="cb5-5"><a></a></span>
+<span id="cb5-6"><a></a><span class="fu">head</span>(tidy_dinner_party_tokens)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 3
+  index character word      
+  &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;     
+1 16791 Stanley   ridiculous
+2 16792 Phyllis   idea      
+3 16792 Phyllis   time      
+4 16793 Michael   likes     
+5 16793 Michael   late      
+6 16793 Michael   plans     </code></pre>
+</div>
+</div>
+</section>
+<section id="apply-stemming" class="slide level2">
+<h2>Apply stemming</h2>
+<ul>
+<li>Can use <a href="https://cran.r-project.org/web/packages/SnowballC/SnowballC.pdf"><code>SnowballC</code> package</a> to perform stemming</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a><span class="fu">library</span>(SnowballC)</span>
+<span id="cb7-2"><a></a></span>
+<span id="cb7-3"><a></a>tidy_dinner_party_tokens <span class="ot">&lt;-</span> tidy_dinner_party_tokens <span class="sc">|&gt;</span></span>
+<span id="cb7-4"><a></a>  <span class="fu">mutate</span>(<span class="at">stem =</span> <span class="fu">wordStem</span>(word))</span>
+<span id="cb7-5"><a></a></span>
+<span id="cb7-6"><a></a><span class="fu">head</span>(tidy_dinner_party_tokens)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 4
+  index character word       stem   
+  &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;      &lt;chr&gt;  
+1 16791 Stanley   ridiculous ridicul
+2 16792 Phyllis   idea       idea   
+3 16792 Phyllis   time       time   
+4 16793 Michael   likes      like   
+5 16793 Michael   late       late   
+6 16793 Michael   plans      plan   </code></pre>
+</div>
+</div>
+</section>
+<section id="create-word-cloud-using-term-frequencies" class="slide level2">
+<h2>Create word cloud using term frequencies</h2>
+<p><strong>Word Cloud</strong>: Displays all words mentioned across documents, where more common words are larger</p>
+<ul>
+<li>To do this, you must compute the <em>total</em> word counts:</li>
+</ul>
+<p><span class="math display">\[w_{\cdot 1} = \sum_{i=1}^N w_{i1} \hspace{0.1in} \dots \hspace{0.1in} w_{\cdot J} = \sum_{i=1}^N w_{iJ}\]</span></p>
+<ul>
+<li>Then, the size of Word <span class="math inline">\(j\)</span> is proportional to <span class="math inline">\(w_{\cdot j}\)</span></li>
 </ul>
 <div class="fragment">
-<ol start="2" type="1">
-<li><strong>Ordinal</strong>: levels with a meaningful order</li>
+<p>Create word clouds in <code>R</code> using <a href="https://cran.r-project.org/web/packages/wordcloud/wordcloud.pdf"><code>wordcloud</code> package</a></p>
+<p>Takes in two main arguments to create word clouds:</p>
+<ol type="1">
+<li><p><code>words</code>: vector of unique words</p></li>
+<li><p><code>freq</code>: vector of frequencies</p></li>
 </ol>
-<ul>
-<li>Examples: education level, grades, ranks</li>
-</ul>
-</div>
-<div class="fragment">
-<p><strong>NOTE</strong>: <code>R</code> and <code>ggplot</code> considers a categorical variable to be <code>factor</code></p>
-<ul>
-<li><p><code>R</code> will always treat categorical variables as ordinal! Defaults to alphabetical…</p></li>
-<li><p>We will need to manually define the <code>factor</code> levels</p></li>
-</ul>
 </div>
 </section>
-<section id="d-categorical-data-structure" class="slide level2">
-<h2>1D categorical data structure</h2>
-<ul>
-<li><p>Observations are collected into a vector <span class="math inline">\((x_1, \dots, x_n)\)</span>, where <span class="math inline">\(n\)</span> is number of observations</p></li>
-<li><p>Each observed value <span class="math inline">\(x_i\)</span> can only belong to one category level <span class="math inline">\(\{ C_1, C_2, \dots \}\)</span></p></li>
-</ul>
-<div class="fragment">
-<p>Look at <code>penguins</code> data from the <a href="https://allisonhorst.github.io/palmerpenguins/"><code>palmerpenguins</code></a> package, focusing on <code>species</code>:</p>
+<section id="create-word-cloud-using-term-frequencies-1" class="slide level2">
+<h2>Create word cloud using term frequencies</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a><span class="fu">library</span>(palmerpenguins)</span>
-<span id="cb1-2"><a></a><span class="fu">head</span>(penguins<span class="sc">$</span>species)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] Adelie Adelie Adelie Adelie Adelie Adelie
-Levels: Adelie Chinstrap Gentoo</code></pre>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a></a>token_summary <span class="ot">&lt;-</span> tidy_dinner_party_tokens <span class="sc">|&gt;</span></span>
+<span id="cb9-2"><a></a>  <span class="fu">group_by</span>(stem) <span class="sc">|&gt;</span></span>
+<span id="cb9-3"><a></a>  <span class="fu">count</span>() <span class="sc">|&gt;</span></span>
+<span id="cb9-4"><a></a>  <span class="fu">ungroup</span>() </span>
+<span id="cb9-5"><a></a></span>
+<span id="cb9-6"><a></a><span class="fu">library</span>(wordcloud)</span>
+<span id="cb9-7"><a></a><span class="fu">wordcloud</span>(<span class="at">words =</span> token_summary<span class="sc">$</span>stem, </span>
+<span id="cb9-8"><a></a>          <span class="at">freq =</span> token_summary<span class="sc">$</span>n, </span>
+<span id="cb9-9"><a></a>          <span class="at">random.order =</span> <span class="cn">FALSE</span>, </span>
+<span id="cb9-10"><a></a>          <span class="at">max.words =</span> <span class="dv">100</span>, </span>
+<span id="cb9-11"><a></a>          <span class="at">colors =</span> <span class="fu">brewer.pal</span>(<span class="dv">8</span>, <span class="st">"Dark2"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</div>
-<p><strong><em>How could we summarize these data? What information would you report?</em></strong></p>
-</div>
-<div class="fragment">
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a><span class="fu">table</span>(penguins<span class="sc">$</span>species)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-   Adelie Chinstrap    Gentoo 
-      152        68       124 </code></pre>
-</div>
-</div>
-</div>
-</section>
-<section id="area-plots" class="slide level2">
-<h2>Area plots</h2>
 
-<img data-src="https://clauswilke.com/dataviz/directory_of_visualizations_files/figure-html/proportions-1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:65.0%"><ul>
-<li><p>Each area corresponds to one categorical level</p></li>
-<li><p>Area is proportional to counts/frequencies/percentages</p></li>
-<li><p>Differences between areas correspond to differences between counts/frequencies/percentages</p></li>
+<ul>
+<li><p>Set <code>random.order = FALSE</code> to place biggest words in center</p></li>
+<li><p>Can customize to display limited # words (<code>max.words</code>)</p></li>
+<li><p>Other options as well like <code>colors</code></p></li>
 </ul>
 </section>
-<section id="bar-charts" class="slide level2">
-<h2>Bar charts</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb5" data-code-line-numbers="3-4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb5-2"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb5-3"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species)) <span class="sc">+</span></span>
-<span id="cb5-4"><a></a>  <span class="fu">geom_bar</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-4-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
-<section id="behind-the-scenes-statistical-summaries" class="slide level2">
-<h2>Behind the scenes: statistical summaries</h2>
-
-<img data-src="https://d33wubrfki0l68.cloudfront.net/70a3b18a1128c785d8676a48c005ee9b6a23cc00/7283c/images/visualization-stat-bar.png" class="quarto-figure quarto-figure-center r-stretch" style="width:65.0%"><p>From <a href="https://r4ds.had.co.nz/data-visualisation.html">Chapter 3 of R for Data Science</a></p>
-</section>
-<section id="spine-charts---height-version" class="slide level2">
-<h2>Spine charts - height version</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb6" data-code-line-numbers="2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb6-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> species, <span class="at">x =</span> <span class="st">""</span>)) <span class="sc">+</span></span>
-<span id="cb6-3"><a></a>  <span class="fu">geom_bar</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-5-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
-<section id="spine-charts---width-version" class="slide level2">
-<h2>Spine charts - width version</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7" data-code-line-numbers="4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb7-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> species, <span class="at">x =</span> <span class="st">""</span>)) <span class="sc">+</span></span>
-<span id="cb7-3"><a></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span></span>
-<span id="cb7-4"><a></a>  <span class="fu">coord_flip</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-6-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
-<section id="what-does-a-bar-chart-show" class="slide level2">
-<h2>What does a bar chart show?</h2>
-<p><strong>Marginal Distribution</strong></p>
-<ul>
-<li><p>Assume categorical variable <span class="math inline">\(X\)</span> has <span class="math inline">\(K\)</span> categories: <span class="math inline">\(C_1, \dots, C_K\)</span></p></li>
-<li><p><strong>True</strong> marginal distribution of <span class="math inline">\(X\)</span>:</p></li>
-</ul>
-<p><span class="math display">\[
-P(X = C_j) = p_j,\ j \in \{ 1, \dots, K \}
-\]</span></p>
-<div class="fragment">
-<p><strong>We have access to the Empirical Marginal Distribution</strong></p>
-<ul>
-<li>Observed distribution of <span class="math inline">\(X\)</span>, our best estimate (MLE) of the marginal distribution of <span class="math inline">\(X\)</span>: <span class="math inline">\(\hat{p}_1\)</span>, <span class="math inline">\(\hat{p}_2\)</span>, <span class="math inline">\(\dots\)</span>, <span class="math inline">\(\hat{p}_K\)</span></li>
-</ul>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a><span class="fu">table</span>(penguins<span class="sc">$</span>species) <span class="sc">/</span> <span class="fu">nrow</span>(penguins)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-   Adelie Chinstrap    Gentoo 
-0.4418605 0.1976744 0.3604651 </code></pre>
-</div>
-</div>
-</div>
-</section>
-<section id="bar-charts-with-proportions" class="slide level2">
-<h2>Bar charts with proportions</h2>
-<ul>
-<li><p><a href="https://ggplot2.tidyverse.org/reference/aes_eval.html"><code>after_stat()</code></a> indicates the aesthetic mapping is performed after statistical transformation</p></li>
-<li><p>Use <code>after_stat(count)</code> to access the <code>stat_count()</code> called by <code>geom_bar()</code></p></li>
-</ul>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb10" data-code-line-numbers="3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb10-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species)) <span class="sc">+</span></span>
-<span id="cb10-3"><a></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">after_stat</span>(count) <span class="sc">/</span> <span class="fu">sum</span>(<span class="fu">after_stat</span>(count)))) <span class="sc">+</span> </span>
-<span id="cb10-4"><a></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"Proportion"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-8-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
-<section id="compute-and-display-the-proportions-directly" class="slide level2">
-<h2>Compute and display the proportions directly</h2>
-<ul>
-<li><p>Use <code>group_by()</code>, <code>summarize()</code>, and <code>mutate()</code> in a pipeline to compute then display the proportions directly</p></li>
-<li><p>Need to indicate we are displaying the <code>y</code> axis as given, i.e., the identity function</p></li>
-</ul>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb11" data-code-line-numbers="2-5,7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb11-2"><a></a>  <span class="fu">group_by</span>(species) <span class="sc">|&gt;</span> </span>
-<span id="cb11-3"><a></a>  <span class="fu">summarize</span>(<span class="at">count =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb11-4"><a></a>  <span class="fu">mutate</span>(<span class="at">total =</span> <span class="fu">sum</span>(count), </span>
-<span id="cb11-5"><a></a>         <span class="at">prop =</span> count <span class="sc">/</span> total) <span class="sc">|&gt;</span> </span>
-<span id="cb11-6"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species)) <span class="sc">+</span></span>
-<span id="cb11-7"><a></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> prop), <span class="at">stat =</span> <span class="st">"identity"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-
-</section>
-<section id="compute-and-display-the-proportions-directly-output" class="slide level2 output-location-slide"><h2>Compute and display the proportions directly</h2><div class="cell output-location-slide" data-layout-align="center">
+<section id="create-word-cloud-using-term-frequencies-1-output" class="slide level2 output-location-slide"><h2>Create word cloud using term frequencies</h2><div class="cell output-location-slide" data-layout-align="center">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-9-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
+<p><img data-src="11-text-data_files/figure-revealjs/unnamed-chunk-6-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
 </figure>
 </div>
 </div>
-</div></section><section id="what-about-uncertainty" class="slide level2">
-<h2>What about uncertainty?</h2>
+</div></section><section id="comparison-clouds" class="slide level2">
+<h2>Comparison clouds</h2>
+<p>Imagine we have two different collections of documents, <span class="math inline">\(\mathcal{A}\)</span> and <span class="math inline">\(\mathcal{B}\)</span>, that we wish to visually compare.</p>
+<div class="fragment">
+<p>Imagine we create the word clouds for the two collections of documents. Then this means we constructed vectors of total words for each collection:</p>
 <ul>
-<li>Quantify uncertainty for our estimate <span class="math inline">\(\hat{p}_j = \frac{n_j}{n}\)</span> with the <strong>standard error</strong>:</li>
+<li><p><span class="math inline">\(\mathbf{w}^{\mathcal{A}} = (w_{\cdot 1}^{\mathcal{A}}, \dots, w_{\cdot J}^{\mathcal{A}})\)</span></p></li>
+<li><p><span class="math inline">\(\mathbf{w}^{\mathcal{B}} = (w_{\cdot 1}^{\mathcal{B}}, \dots, w_{\cdot J}^{\mathcal{B}})\)</span></p></li>
 </ul>
-<p><span class="math display">\[
-SE(\hat{p}_j) = \sqrt{\frac{\hat{p}_j(1 - \hat{p}_j)}{n}}
-\]</span></p>
+<p>Consider the <span class="math inline">\(j\)</span>th word, let’s pretend it’s “dinner”:</p>
+<ul>
+<li><p>If <span class="math inline">\(w_{\cdot j}^{\mathcal{A}}\)</span> is large, then “dinner” is large in the word cloud for <span class="math inline">\(\mathcal{A}\)</span>.</p></li>
+<li><p>If <span class="math inline">\(w_{\cdot j}^{\mathcal{B}}\)</span> is large, then “dinner” is large in the word cloud for <span class="math inline">\(\mathcal{B}\)</span>.</p></li>
+<li><p>But if both are large, this doesn’t tell us whether <span class="math inline">\(w_{\cdot j}^{\mathcal{A}}\)</span> or <span class="math inline">\(w_{\cdot j}^{\mathcal{B}}\)</span> is bigger.</p></li>
+</ul>
+</div>
+</section>
+<section id="comparison-clouds-1" class="slide level2">
+<h2>Comparison clouds</h2>
+<p>This motivates the construction of <strong>comparison word clouds</strong>:</p>
+<ol type="1">
+<li><p>For word <span class="math inline">\(j\)</span>, compute <span class="math inline">\(\bar{w}_{\cdot j} = \text{average}(w_{\cdot j}^{\mathcal{A}}, w_{\cdot j}^{\mathcal{B}})\)</span></p></li>
+<li><p>Compute <span class="math inline">\(w_{\cdot j}^{\mathcal{A}} - \bar{w}_{\cdot j}\)</span> and <span class="math inline">\(w_{\cdot j}^{\mathcal{B}} - \bar{w}_{\cdot j}\)</span></p></li>
+<li><p>If <span class="math inline">\(w_{\cdot j}^{\mathcal{A}} - \bar{w}_{\cdot j}\)</span> is very positive, make it large for the <span class="math inline">\(\mathcal{A}\)</span> word cloud. If <span class="math inline">\(w_{\cdot j}^{\mathcal{B}} - \bar{w}_{\cdot j}\)</span> is very positive, make it large for the <span class="math inline">\(\mathcal{B}\)</span> word cloud.</p></li>
+</ol>
+</section>
+<section id="comparison-clouds-2" class="slide level2">
+<h2>Comparison clouds</h2>
+
+<img data-src="11-text-data_files/figure-revealjs/unnamed-chunk-7-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="tf-idf-weighting" class="slide level2">
+<h2>TF-IDF weighting</h2>
+<ul>
+<li>We saw that <code>michael</code> was the largest word, but what if I’m interested in comparing text across characters (i.e., documents)?</li>
+</ul>
 <div class="fragment">
 <ul>
-<li><p>Compute <span class="math inline">\(\alpha\)</span>-level <strong>confidence interval</strong> (CI) as <span class="math inline">\(\hat{p}_j \pm z_{1 - \alpha / 2} \cdot SE(\hat{p}_j)\)</span></p></li>
-<li><p>Good rule-of-thumb: construct 95% CI using <span class="math inline">\(\hat{p}_j \pm 2 \cdot SE(\hat{p}_j)\)</span></p></li>
-<li><p>Approximation justified by CLT, so CI could include values outside of [0,1]</p></li>
+<li><p>It’s arguably of more interest to understand which words are frequently used in one set of texts but not the other, i.e., which words are unique?</p></li>
+<li><p>Many text analytics methods will <strong>down-weight</strong> words that occur frequently across all documents</p></li>
 </ul>
 </div>
-</section>
-<section id="add-standard-errors-to-bars" class="slide level2">
-<h2>Add standard errors to bars</h2>
+<div class="fragment">
 <ul>
-<li><p>Need to remember each CI is for each <span class="math inline">\(\hat{p}_j\)</span> marginally, <strong>not</strong> jointly</p></li>
-<li><p>Have to be careful with <strong>multiple testing</strong></p></li>
+<li><p><strong>Inverse document frequency (IDF)</strong>: for word <span class="math inline">\(j\)</span> we compute <span class="math inline">\(\text{idf}_j = \log \frac{N}{N_j}\)</span></p>
+<ul>
+<li>where <span class="math inline">\(N\)</span> is number of documents, <span class="math inline">\(N_j\)</span> is number of documents with word <span class="math inline">\(j\)</span></li>
+</ul></li>
+<li><p>Compute <strong>TF-IDF</strong> <span class="math inline">\(= w_{ij} \times \text{idf}_j\)</span></p></li>
 </ul>
+</div>
+</section>
+<section id="tf-idf-example-with-characters" class="slide level2">
+<h2>TF-IDF example with characters</h2>
+<p>Compute and join TF-IDF using <code>bind_tf_idf()</code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb12" data-code-line-numbers="6-8,11-12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb12-2"><a></a>  <span class="fu">group_by</span>(species) <span class="sc">|&gt;</span> </span>
-<span id="cb12-3"><a></a>  <span class="fu">summarize</span>(<span class="at">count =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb12-4"><a></a>  <span class="fu">mutate</span>(<span class="at">total =</span> <span class="fu">sum</span>(count), </span>
-<span id="cb12-5"><a></a>         <span class="at">prop =</span> count <span class="sc">/</span> total,</span>
-<span id="cb12-6"><a></a>         <span class="at">se =</span> <span class="fu">sqrt</span>(prop <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> prop) <span class="sc">/</span> total), </span>
-<span id="cb12-7"><a></a>         <span class="at">lower =</span> prop <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> se, </span>
-<span id="cb12-8"><a></a>         <span class="at">upper =</span> prop <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> se) <span class="sc">|&gt;</span> </span>
-<span id="cb12-9"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species)) <span class="sc">+</span></span>
-<span id="cb12-10"><a></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> prop), <span class="at">stat =</span> <span class="st">"identity"</span>) <span class="sc">+</span></span>
-<span id="cb12-11"><a></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> lower, <span class="at">ymax =</span> upper), </span>
-<span id="cb12-12"><a></a>                <span class="at">color =</span> <span class="st">"red"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a></a>character_token_summary <span class="ot">&lt;-</span> tidy_dinner_party_tokens <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a></a>  <span class="fu">group_by</span>(character, stem) <span class="sc">|&gt;</span> </span>
+<span id="cb10-3"><a></a>  <span class="fu">count</span>() <span class="sc">|&gt;</span></span>
+<span id="cb10-4"><a></a>  <span class="fu">ungroup</span>() </span>
+<span id="cb10-5"><a></a></span>
+<span id="cb10-6"><a></a>character_token_summary <span class="ot">&lt;-</span> character_token_summary <span class="sc">|&gt;</span></span>
+<span id="cb10-7"><a></a>  <span class="fu">bind_tf_idf</span>(stem, character, n) </span>
+<span id="cb10-8"><a></a>character_token_summary</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 597 × 6
+   character stem        n     tf   idf tf_idf
+   &lt;chr&gt;     &lt;chr&gt;   &lt;int&gt;  &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
+ 1 All       cheer       1 1      2.77  2.77  
+ 2 Andy      anim        1 0.0476 2.77  0.132 
+ 3 Andy      bet         1 0.0476 2.08  0.0990
+ 4 Andy      capit       1 0.0476 2.77  0.132 
+ 5 Andy      dinner      1 0.0476 0.981 0.0467
+ 6 Andy      flower      2 0.0952 2.77  0.264 
+ 7 Andy      hei         1 0.0476 1.39  0.0660
+ 8 Andy      helena      1 0.0476 2.77  0.132 
+ 9 Andy      hump        2 0.0952 2.77  0.264 
+10 Andy      michael     1 0.0476 0.981 0.0467
+# ℹ 587 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="top-10-words-by-tf-idf-for-each-character" class="slide level2">
+<h2>Top 10 words by TF-IDF for each character</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a></a>character_token_summary <span class="sc">|&gt;</span></span>
+<span id="cb12-2"><a></a>  <span class="fu">filter</span>(character <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Michael"</span>, <span class="st">"Jan"</span>, <span class="st">"Jim"</span>, <span class="st">"Pam"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb12-3"><a></a>  <span class="fu">group_by</span>(character) <span class="sc">|&gt;</span></span>
+<span id="cb12-4"><a></a>  <span class="fu">slice_max</span>(tf_idf, <span class="at">n =</span> <span class="dv">10</span>, <span class="at">with_ties =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-5"><a></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
+<span id="cb12-6"><a></a>  <span class="fu">mutate</span>(<span class="at">stem =</span> <span class="fu">reorder_within</span>(stem, tf_idf, character)) <span class="sc">|&gt;</span></span>
+<span id="cb12-7"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">y =</span> tf_idf, <span class="at">x =</span> stem),</span>
+<span id="cb12-8"><a></a>         <span class="at">fill =</span> <span class="st">"darkblue"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb12-9"><a></a>  <span class="fu">geom_col</span>() <span class="sc">+</span></span>
+<span id="cb12-10"><a></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
+<span id="cb12-11"><a></a>  <span class="fu">scale_x_reordered</span>() <span class="sc">+</span></span>
+<span id="cb12-12"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> character, <span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">scales =</span> <span class="st">"free"</span>) <span class="sc">+</span></span>
+<span id="cb12-13"><a></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"TF-IDF"</span>, <span class="at">x =</span> <span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 </section>
-<section id="add-standard-errors-to-bars-output" class="slide level2 output-location-slide"><h2>Add standard errors to bars</h2><div class="cell output-location-slide" data-layout-align="center">
+<section id="top-10-words-by-tf-idf-for-each-character-output" class="slide level2 output-location-slide"><h2>Top 10 words by TF-IDF for each character</h2><div class="cell output-location-slide" data-layout-align="center">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-10-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
+<p><img data-src="11-text-data_files/figure-revealjs/unnamed-chunk-9-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
 </figure>
 </div>
 </div>
-</div></section><section id="why-does-this-matter" class="slide level2">
-<h2>Why does this matter?</h2>
-<div>
-
+</div></section><section id="sentiment-analysis" class="slide level2">
+<h2>Sentiment Analysis</h2>
+<ul>
+<li>The visualizations so far only look at word <em>frequency</em> (possibly weighted with TF-IDF), but doesn’t tell you <em>how</em> words are used</li>
+</ul>
+<div class="fragment">
+<ul>
+<li><p>A common goal in text analysis is to try to understand the overall <strong>sentiment</strong> or “feeling” of text, i.e., <strong>sentiment analysis</strong></p></li>
+<li><p>Typical approach:</p>
+<ol type="1">
+<li><p>Find a sentiment dictionary (e.g., “positive” and “negative” words)</p></li>
+<li><p>Count the number of words belonging to each sentiment</p></li>
+<li><p>Using the counts, you can compute an “average sentiment” (e.g., positive counts - negative counts)</p></li>
+</ol></li>
+</ul>
 </div>
-<div class="cell quarto-layout-panel" data-layout-ncol="2" data-layout-align="center">
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-11-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
-</figure>
-</div>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-11-2.png" class="quarto-figure quarto-figure-center" width="960"></p>
-</figure>
-</div>
-</div>
-</div>
+<div class="fragment">
+<ul>
+<li><p>This is called a <strong>dictionary-based approach</strong></p></li>
+<li><p>The <strong>Bing</strong> dictionary (named after Bing Liu) provides 6,786 words that are either “positive” or “negative”</p></li>
+</ul>
 </div>
 </section>
-<section id="graphs-can-appear-the-same-with-very-different-statistical-conclusions---mainly-due-to-sample-size" class="slide level2">
-<h2>Graphs can appear the same with very different statistical conclusions - mainly due to sample size</h2>
-<div>
-
-</div>
-<div class="cell quarto-layout-panel" data-layout-ncol="2" data-layout-align="center">
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-12-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
-</figure>
-</div>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-12-2.png" class="quarto-figure quarto-figure-center" width="960"></p>
-</figure>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="useful-to-order-categories-by-frequency-with-forcats" class="slide level2">
-<h2>Useful to order categories by frequency with <a href="https://forcats.tidyverse.org/"><code>forcats</code></a></h2>
+<section id="character-sentiment-analysis" class="slide level2">
+<h2>Character sentiment analysis</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb13" data-code-line-numbers="9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb13-2"><a></a>  <span class="fu">group_by</span>(species) <span class="sc">|&gt;</span> </span>
-<span id="cb13-3"><a></a>  <span class="fu">summarize</span>(<span class="at">count =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb13-4"><a></a>  <span class="fu">mutate</span>(<span class="at">total =</span> <span class="fu">sum</span>(count), </span>
-<span id="cb13-5"><a></a>         <span class="at">prop =</span> count <span class="sc">/</span> total,</span>
-<span id="cb13-6"><a></a>         <span class="at">se =</span> <span class="fu">sqrt</span>(prop <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> prop) <span class="sc">/</span> total), </span>
-<span id="cb13-7"><a></a>         <span class="at">lower =</span> prop <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> se, </span>
-<span id="cb13-8"><a></a>         <span class="at">upper =</span> prop <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> se,</span>
-<span id="cb13-9"><a></a>         <span class="at">species =</span> <span class="fu">fct_reorder</span>(species, prop)) <span class="sc">|&gt;</span></span>
-<span id="cb13-10"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species)) <span class="sc">+</span></span>
-<span id="cb13-11"><a></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> prop), <span class="at">stat =</span> <span class="st">"identity"</span>) <span class="sc">+</span></span>
-<span id="cb13-12"><a></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> lower, <span class="at">ymax =</span> upper), </span>
-<span id="cb13-13"><a></a>                <span class="at">color =</span> <span class="st">"red"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a></a><span class="fu">get_sentiments</span>(<span class="st">"bing"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6,786 × 2
+   word        sentiment
+   &lt;chr&gt;       &lt;chr&gt;    
+ 1 2-faces     negative 
+ 2 abnormal    negative 
+ 3 abolish     negative 
+ 4 abominable  negative 
+ 5 abominably  negative 
+ 6 abominate   negative 
+ 7 abomination negative 
+ 8 abort       negative 
+ 9 aborted     negative 
+10 aborts      negative 
+# ℹ 6,776 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="character-sentiment-analysis-1" class="slide level2">
+<h2>Character sentiment analysis</h2>
+<p>Join sentiment to token table (without stemming)</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a></a>tidy_all_tokens <span class="ot">&lt;-</span> dinner_party_table <span class="sc">|&gt;</span></span>
+<span id="cb15-2"><a></a>  <span class="fu">unnest_tokens</span>(word, text)</span>
+<span id="cb15-3"><a></a></span>
+<span id="cb15-4"><a></a>tidy_sentiment_tokens <span class="ot">&lt;-</span> tidy_all_tokens <span class="sc">|&gt;</span></span>
+<span id="cb15-5"><a></a>  <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"bing"</span>)) </span>
+<span id="cb15-6"><a></a></span>
+<span id="cb15-7"><a></a><span class="fu">head</span>(tidy_sentiment_tokens)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 4
+  index character word       sentiment
+  &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;      &lt;chr&gt;    
+1 16791 Stanley   ridiculous negative 
+2 16793 Michael   likes      positive 
+3 16793 Michael   work       positive 
+4 16795 Michael   enough     positive 
+5 16795 Michael   enough     positive 
+6 16795 Michael   mad        negative </code></pre>
+</div>
+</div>
+</section>
+<section id="character-sentiment-analysis-2" class="slide level2">
+<h2>Character sentiment analysis</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a></a>tidy_sentiment_tokens <span class="sc">|&gt;</span></span>
+<span id="cb17-2"><a></a>  <span class="fu">group_by</span>(character, sentiment) <span class="sc">|&gt;</span></span>
+<span id="cb17-3"><a></a>  <span class="fu">summarize</span>(<span class="at">n_words =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb17-4"><a></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
+<span id="cb17-5"><a></a>  <span class="fu">group_by</span>(character) <span class="sc">|&gt;</span></span>
+<span id="cb17-6"><a></a>  <span class="fu">mutate</span>(<span class="at">total_assigned_words =</span> <span class="fu">sum</span>(n_words)) <span class="sc">|&gt;</span></span>
+<span id="cb17-7"><a></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
+<span id="cb17-8"><a></a>  <span class="fu">mutate</span>(<span class="at">character =</span> <span class="fu">fct_reorder</span>(character, total_assigned_words)) <span class="sc">|&gt;</span></span>
+<span id="cb17-9"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> character, <span class="at">y =</span> n_words, <span class="at">fill =</span> sentiment)) <span class="sc">+</span> </span>
+<span id="cb17-10"><a></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>) <span class="sc">+</span></span>
+<span id="cb17-11"><a></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
+<span id="cb17-12"><a></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"red"</span>, <span class="st">"blue"</span>)) <span class="sc">+</span></span>
+<span id="cb17-13"><a></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb17-14"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 </section>
-<section id="useful-to-order-categories-by-frequency-with-forcats-output" class="slide level2 output-location-slide"><h2>Useful to order categories by frequency with <a href="https://forcats.tidyverse.org/"><code>forcats</code></a></h2><div class="cell output-location-slide" data-layout-align="center">
+<section id="character-sentiment-analysis-2-output" class="slide level2 output-location-slide"><h2>Character sentiment analysis</h2><div class="cell output-location-slide" data-layout-align="center">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-13-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
+<p><img data-src="11-text-data_files/figure-revealjs/unnamed-chunk-12-1.png" class="quarto-figure quarto-figure-center" width="960"></p>
 </figure>
 </div>
 </div>
-</div></section><section id="so-you-want-to-make-pie-charts" class="slide level2">
-<h2>So you want to make pie charts…</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb14" data-code-line-numbers="2-5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a></a>penguins <span class="sc">|&gt;</span> </span>
-<span id="cb14-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> species, <span class="at">x =</span> <span class="st">""</span>)) <span class="sc">+</span> </span>
-<span id="cb14-3"><a></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">after_stat</span>(count))) <span class="sc">+</span></span>
-<span id="cb14-4"><a></a>  <span class="fu">coord_polar</span>(<span class="at">theta =</span> <span class="st">"y"</span>) <span class="sc">+</span></span>
-<span id="cb14-5"><a></a>  <span class="fu">theme_void</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></section><section id="other-functions-of-text" class="slide level2">
+<h2>Other functions of text</h2>
+<ul>
+<li><p>We’ve just focused on word counts - <strong>but there are many functions of text</strong></p></li>
+<li><p>For example: <strong>number of unique words</strong> is often used to measure vocabulary</p></li>
+</ul>
 
-</div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-14-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
-<section id="friends-dont-let-friends-make-pie-charts" class="slide level2">
-<h2><a href="https://github.com/cxli233/FriendsDontLetFriends">Friends Don’t Let Friends Make Pie Charts</a></h2>
-
-<img data-src="https://raw.githubusercontent.com/cxli233/FriendsDontLetFriends/9267fcbb0e5db5a95c2cf624db3c53b50d6ee2fb/Results/dont_pie_chart.svg" class="quarto-figure quarto-figure-center r-stretch" style="width:80.0%"></section>
-<section id="waffle-charts-are-cooler-anyway" class="slide level2">
-<h2><a href="https://github.com/hrbrmstr/waffle">Waffle charts</a> are cooler anyway…</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a></a><span class="fu">library</span>(waffle)</span>
-<span id="cb15-2"><a></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb15-3"><a></a>  <span class="fu">group_by</span>(species) <span class="sc">|&gt;</span> </span>
-<span id="cb15-4"><a></a>  <span class="fu">summarize</span>(<span class="at">count =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb15-5"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> species, <span class="at">values =</span> count)) <span class="sc">+</span></span>
-<span id="cb15-6"><a></a>  <span class="fu">geom_waffle</span>(<span class="at">n_rows =</span> <span class="dv">20</span>, <span class="at">color =</span> <span class="st">"white"</span>, <span class="at">flip =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
-<span id="cb15-7"><a></a>  <span class="fu">coord_equal</span>() <span class="sc">+</span></span>
-<span id="cb15-8"><a></a>  <span class="fu">theme_void</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="02-categorical_files/figure-revealjs/unnamed-chunk-15-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<img data-src="https://pbs.twimg.com/media/DxCgsrxWwAAOWO3.jpg" class="quarto-figure quarto-figure-center r-stretch" style="width:70.0%"></section>
 <section id="recap-and-next-steps" class="slide level2">
 <h2>Recap and next steps</h2>
 <ul>
-<li><p>Discussed basic principles of data visualization and walked through variety of examples</p></li>
-<li><p>Visualize categorical data with bars!</p></li>
-<li><p>Display uncertainty with standard errors</p></li>
+<li>Most common representation: Bag of words and term frequencies (possibly weighted by TF-IDF)</li>
 </ul>
 <div class="fragment">
 <ul>
-<li><p><strong>HW1 is due next Wednesday - complete GenAI module ON TIME!</strong></p></li>
-<li><p><strong>Complete HW0 by Thursday night!</strong> Confirms you have everything installed and can <a href="https://quarto.org/docs/output-formats/pdf-basics.html">render <code>.qmd</code> files to PDF via <code>tinytex</code></a></p></li>
+<li><p>Word clouds are the most common way to visualize the most frequent words in a set of documents</p></li>
+<li><p>TF-IDF weighting allows you to detect words that are uniquely used in certain documents</p></li>
 </ul>
 </div>
 <div class="fragment">
 <ul>
-<li><p><strong>Next time</strong>: Visualizing 2D categorical and 1D quantitative data</p></li>
-<li><p>Recommended reading:</p>
+<li>Can also measure the “sentiment” of text with sentiment-based dictionaries</li>
+</ul>
+</div>
+<div class="fragment">
 <ul>
-<li><a href="https://clauswilke.com/dataviz/visualizing-proportions.html">CW Chapter 10 Visualizing proportions</a>, <a href="https://clauswilke.com/dataviz/visualizing-uncertainty.html#visualizing-the-uncertainty-of-point-estimates">CW Chapter 16.2 Visualizing the uncertainty of point estimates</a>, <a href="https://clauswilke.com/dataviz/nested-proportions.html">CW Chapter 11 Visualizing nested proportions</a></li>
-</ul></li>
+<li><p><strong>Infographic is due Friday night!</strong></p></li>
+<li><p><a href="https://www.tidytextmining.com/">Text Mining With R</a>, <a href="https://smltar.com/">Supervised Machine Learning for Text Analysis in R</a></p></li>
 </ul>
 
 <div class="quarto-auto-generated-content">
