@@ -15,4 +15,5 @@ title: "Lectures"
 | 9         | Sept 25 | Time series and intro to spatial data  | [slides](lectures/09-time-series-intro-spatial.qmd)  |
 | 10        | Sept 30 | Areal data and creating high-quality graphics  | [slides](lectures/10-areal-data-creating-graphics.qmd)  |
 | 11        | Oct 7 | Visualizing text data  | [slides](lectures/11-text-data.qmd)  |
+| 12        | Oct 9 | Animations, interactive elements, and Shiny  | [slides](lectures/12-animations-interactive.qmd)  |
 

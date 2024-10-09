@@ -1,0 +1,335 @@
+---
+title: "Animations, interactive elements, and Shiny"
+author: "Prof Ron Yurko"
+footer:  "[mads-36613-fall24](https://ryurko.github.io/mads-36613-fall24/)"
+date: 2024-10-09
+engine: knitr
+format:
+  revealjs:
+    theme: theme.scss
+    chalkboard: true
+    pdf-separate-fragments: true
+    slide-number: c/t
+    smaller: true
+    code-line-numbers: true
+    linestretch: 1.25
+    html-math-method:
+      method: mathjax
+      url: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+---
+
+```{r}
+#| include: false
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center"
+)
+
+library(tidyverse)
+library(palmerpenguins)
+data(penguins)
+```
+
+
+## Reminders, previously, and today...
+
++ **Infographic is due Friday night!**
+
++ You should be working on your presentations for Jamie...
+
+. . .
+
+
++ Walked through basics of text data with bag-of-words representation
+
++ Created word cloud visualizations of counts and bar charts of TF-IDF values
+
+. . .
+
+**TODAY:**
+
++ Discuss the role of animations
+
++ Walk through interactive visualizations
+
++ Introduction to Shiny for creating apps
+
+---
+
+## Storytelling with animation...
+
+```{r, echo = FALSE}
+f1_data_ex <- read_csv('https://raw.githubusercontent.com/meghall06/CMU-36-315-site/main/data/constructor_pts.csv') |>
+  filter(name %in% c("McLaren", "Renault", "Racing Point"), year == 2020)
+```
+
+
+```{r}
+#| output-location: slide
+f1_data_ex |>
+  ggplot(aes(x = round, y = points, group = name, color = name)) +
+  geom_line(size = 2) +
+  scale_x_continuous(breaks = seq(1, 17, 1)) +
+  labs(title = "The race for third place in the 2020 F1 season",
+       y = "Accumulated points", x = NULL) +
+  theme_bw()
+```
+
+
+---
+
+## Use [`gganimate`](https://gganimate.com/) to add animations
+
+We could _incrementally_ reveal the results at each stage __to emphasize the story of progression__
+
+
+```{r f1-anim}
+#| output-location: slide
+#| code-line-numbers: "1,9"
+library(gganimate)
+f1_data_ex |>
+  ggplot(aes(x = round, y = points, group = name, color = name)) +
+  geom_line(size = 2) +
+  scale_x_continuous(breaks = seq(1, 17, 1)) +
+  labs(title = "The race for third place in the 2020 F1 season",
+       y = "Accumulated points", x = NULL) +
+  theme_bw() +
+  transition_reveal(round)
+```
+
+
+---
+
+## Using animation to add a dimension
+
+```{r housing-static}
+#| output-location: slide
+txhousing |> 
+  group_by(city, year) |> 
+  summarize(median = mean(median, na.rm = TRUE),listings = mean(listings, na.rm = TRUE)) |> 
+  ggplot(aes(x = median, y = listings, color = (city == "Houston"), 
+             size = (city == "Houston"))) +
+  geom_point(alpha = 0.5, show.legend = FALSE) +
+  scale_color_manual(values = c("black", "darkred")) +
+  scale_size_manual(values = c(2, 4)) +
+  scale_x_continuous(labels = scales::dollar, name = "Median Price") +
+  scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
+  theme_bw() +
+  labs(x = "Median Price", y = "Avg. of Monthly Listings",
+       subtitle = "Houston in red")
+```
+
+
+---
+
+## Using animation to add a dimension
+
+```{r housing-anim}
+#| output-location: slide
+txhousing |> 
+  group_by(city, year) |> 
+  summarize(median = mean(median, na.rm = TRUE), listings = mean(listings, na.rm = TRUE)) |> 
+  ggplot(aes(x = median, y = listings, color = (city == "Houston"),
+             size = (city == "Houston"))) +
+  geom_point(alpha = 0.5, show.legend = FALSE) +
+  scale_color_manual(values = c("black", "darkred")) +
+  scale_size_manual(values = c(2, 4)) +
+  scale_x_continuous(labels = scales::dollar, name = "Median Price") +
+  scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
+  theme_bw() +
+  labs(x = "Median Price", y = "Avg. of Monthly Listings",
+       subtitle = "Houston in red", title = "Year: {frame_time}") + 
+  transition_time(year) 
+```
+
+
+---
+
+## Reminders about animation
+
+Some key points to think about before adding animation to a visualization:
+
+1. Always make and describe the original / base graphic first that does NOT include animation.
+
+. . .
+
+2. Before adding animation to the graph, ask yourself: How would animation give you additional insights about the data **that you would otherwise not be able to**?
+
+. . .
+
+3. Never add animation just because it's cool! 
+
+. . .
+
+4. When presenting, make sure you explain exactly what is being displayed with animation and what within the animation you want to emphasize. This will help you determine if animation is actually worth including.
+
+---
+
+## A bridge between `R` and JavaScript
+
+-  JavaScript enables web developers to create __client-side__ web applications
+
+  - Computations are happening __in the client's browser__, instead of the host's web servers
+  
+- `D3` (or `D3.js`) is the most popular JavaScript library for client-side dynamic data visualizations
+
+  - `D3` == 'data-driven documents'
+
+. . .
+
+- RStudio developers created the [`htmlwidgets`](http://www.htmlwidgets.org/index.html) enabling `R` users to use `D3` without needing to learn JavaScript!
+
+- Renders data visualizations in HTML using `D3` wrappers
+
+  - [Incredible gallery with a variety of uses](http://gallery.htmlwidgets.org/), including a chess package called [`rchess`](http://jkunst.com/rchess/)!
+  
+---
+
+## [Leaflet](https://rstudio.github.io/leaflet/): interactive HTML maps
+
+- `addTiles()`: builds layer with static map (default from OpenStreetMap)
+
+- `addMarkers()`: add marker at point location, e.g., CMU
+
+- Use [`tidygeocoder`](https://cran.r-project.org/web/packages/tidygeocoder/vignettes/tidygeocoder.html) for spatial queries
+
+```{r cmu-map}
+#| output-location: slide
+cmu <- 
+  tibble(address = "Carnegie Mellon University, Pittsburgh, PA") |>
+  tidygeocoder::geocode(address, method = "osm")
+
+library(leaflet)
+leaflet() |> addTiles() |>
+  addMarkers(data = cmu)
+```
+
+
+---
+
+## [DataTables (DT) package](https://rstudio.github.io/DT/) for interactive tables
+
+```{r}
+#| out-width: "80%"
+library(DT)
+datatable(penguins[, 1:6], options = list(pageLength = 5)) 
+```
+
+
+---
+
+## We have a plain plot...
+
+```{r plain-plot}
+#| output-location: slide
+scatter_plain <- penguins |> 
+  ggplot(aes(x = body_mass_g, y = bill_length_mm, 
+             color = species)) +
+  geom_point(alpha = 0.5, size = 2) +
+  labs(x = "Body Mass (g)", y = "Bill Length (mm)") +
+  theme_bw()
+scatter_plain
+```
+
+
+---
+
+## Make it interactive with [Plotly](https://plotly.com/r/)!
+
+```{r go-plotly}
+library(plotly)
+ggplotly(scatter_plain)
+```
+
+
+---
+
+## Customize the tooltip
+
+
+```{r tool-plotly}
+#| output-location: slide
+scatter_upd <- penguins |> 
+  ggplot(aes(x = body_mass_g, y = bill_length_mm, 
+             color = species, 
+             text = paste("sex:", sex))) +
+  geom_point(alpha = 0.5, size = 2) +
+  labs(x = "Body Mass (g)", y = "Bill Length (mm)") +
+  theme_bw()
+
+ggplotly(scatter_upd, tooltip = c("text", "species"))
+```
+
+
+---
+
+## Putting it all together with dashboards
+
+- Dashboards are popular way to make data and visualizations available to clients, managers, stakeholders, etc. to help with decision making
+
+- Typically include a mix of graphics and text, depending on the context 
+
+. . .
+
+- Can easily make HTML dashboards using the [`flexdashboard`](https://pkgs.rstudio.com/flexdashboard/) package
+
+  - Provide interactive capabilities within an HTML file (i.e., you can email this!)
+  
+  - __These are NOT fully interactive like Shiny apps__
+  
+  - [You can use Shiny within `flexdashboard`](https://pkgs.rstudio.com/flexdashboard/articles/shiny.html) but it requires a Shiny server
+  
+  - Another option is [`shinydashboard`](https://rstudio.github.io/shinydashboard/)
+  
+- More recently, [Quarto dashboards](https://quarto.org/docs/dashboards/) are now possible
+  
+- Outside of `R`, [Tableau](https://public.tableau.com/app/discover) is a popular tool (can use free Tableau Public version)
+
+---
+
+## Interactive web apps with [`Shiny`](https://shiny.rstudio.com/)
+
+Shiny is used to build __interactive__ web applications in `R`
+
+__You do NOT need to be a web developer to create Shiny apps__, you just need to learn some additional syntax to augment your `R` code 
+
+. . .
+
+Every Shiny app consists of two scripts (can be saved into one file `app.R`)
+
+1. `ui.R`: controls __user interface__, sets up the display, __widgets__ for user `input`
+
+  - New code specific to Shiny
+
+2. `server.R`: code to generate / display the results! Communicates with `ui.R` with __reactive objects__: processes user `input` to return `output`
+
+  - Traditional `R` code: load packages, data wrangling, create plots
+  
+. . .
+
+Can be run locally or deployed on a Shiny app server for public viewing
+
+# DO IT LIVE
+
+## Recap and next steps...
+
+- Discussed the role of animation in visualizations
+
+- Overview of different interactive elements and basics of Shiny
+
+- I never discussed making fancy tables, but check out the [`gt` package](https://gt.rstudio.com/)
+
+. . .
+
++ **Infographic is due Friday night!**
+
++ Hope you enjoyed the class, please complete the FCEs!
+
++ More reading: [`gganimate` package](https://gganimate.com/), using [Shiny within Quarto](https://quarto.org/docs/interactive/shiny/), [Mastering Shiny book](https://mastering-shiny.org/)
+
+
+![](https://media4.giphy.com/media/xTiIzuSAvgnqdvYghO/200.gif?cid=6c09b952jbpn7ol3x0ei62goer4tkbfnn0tsuowx7x3wayb6&ep=v1_internal_gif_by_id&rid=200.gif&ct=g){fig-align="center" width=80%}
+
+

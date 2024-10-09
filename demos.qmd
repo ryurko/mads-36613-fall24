@@ -15,3 +15,4 @@ title: "Demos"
 | 9      | Sept 30  | Visualizations for areal data | [HTML](demos/09-areal-data.qmd)  |
 | 10     | Sept 30  | Modifying colors and themes | [HTML](demos/10-colors-themes.qmd)  |
 | 11     | Oct 7    | Visualizing text data | [HTML](demos/11-text-data.qmd)  |
+| 12     | Oct 9    | Animations            | [HTML](demos/12-animations.qmd)  |
