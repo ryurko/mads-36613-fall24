@@ -190,6 +190,8 @@ hist2 <- fake_data2 |>
 hist1 + hist2
 ```
 
+---
+
 
 ## Variability of graphs - 5 bins
 
